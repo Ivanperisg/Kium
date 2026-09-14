@@ -108,58 +108,32 @@ body{
   }
 }
 
-/* ---------- PRELOADER: geometric K construction ---------- */
+/* ---------- PRELOADER ---------- */
 #preloader{
-  position:fixed; inset:0; z-index:100; overflow:hidden;
+  position:fixed; inset:0; z-index:100;
+  display:flex; padding:var(--gutter);
+  flex-direction:column; align-items:flex-start; justify-content:flex-end; gap:0.75rem;
   transition:transform 0.65s cubic-bezier(0.22,1,0.36,1);
 }
 #preloader::before{
   content:""; position:absolute; inset:0; z-index:-1; background:var(--background);
 }
+@media (min-width:640px){
+  #preloader{ flex-direction:row; align-items:flex-end; justify-content:space-between; gap:1rem; }
+}
+#preloader.fade-out .preloader-brand, #preloader.fade-out .preloader-count{
+  opacity:0; transition:opacity 0.3s ease-out;
+}
 #preloader.wipe{ transform:translateY(-100%); }
-
-.pre-grid{
-  position:absolute; inset:0;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(242,240,230,0.09) 0 1px, transparent 1px 33.333%),
-    repeating-linear-gradient(90deg, rgba(242,240,230,0.09) 0 1px, transparent 1px 25%);
-  opacity:0; transition:opacity 0.5s ease-out;
+.preloader-brand{
+  font-family:var(--font-display); font-size:var(--fs-h3); text-transform:uppercase;
+  line-height:1; letter-spacing:-0.01em; color:var(--foreground);
 }
-#preloader.grid-in .pre-grid{ opacity:1; }
-
-.pre-circle{
-  position:absolute; left:50%; top:50%; border-radius:50%;
-  border:1px dashed rgba(242,240,230,0.16);
-  transform:translate(-50%,-50%); opacity:0;
-  transition:opacity 0.6s ease-out;
+.preloader-count{
+  font-family:var(--font-display); font-size:var(--fs-display); line-height:1;
+  font-variant-numeric:tabular-nums; color:var(--foreground);
 }
-.pre-circle-a{ width:56vmin; height:56vmin; }
-.pre-circle-b{ width:38vmin; height:38vmin; margin-left:3vmin; }
-#preloader.grid-in .pre-circle{ opacity:1; }
-
-.pre-k{ position:absolute; left:50%; top:48%; width:0; height:0; }
-.k-line{
-  position:absolute; top:-1px; height:2px;
-  background:rgba(242,240,230,0.4);
-  transform:rotate(calc(var(--rot) + var(--jitter))) scaleX(0);
-  transition:transform 0.6s cubic-bezier(0.65,0,0.35,1), background 0.45s ease-out;
-  transition-delay:var(--delay), 0s;
-}
-.k-line-v{ left:-55vmax; width:110vmax; transform-origin:50% 50%; }
-.k-line-d{ left:0; width:150vmax; transform-origin:0% 50%; }
-#preloader.drawn .k-line{ transform:rotate(calc(var(--rot) + var(--jitter))) scaleX(1); }
-#preloader.solid .k-line{ background:var(--foreground); }
-
-.pre-caption{
-  position:absolute; left:var(--gutter); right:var(--gutter); bottom:3rem; text-align:center;
-  font-family:ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", monospace;
-  font-size:0.8125rem; letter-spacing:0.02em; color:var(--muted);
-}
-.pre-cursor{
-  display:inline-block; width:0.5em; height:1em; margin-left:0.1em; background:var(--accent);
-  vertical-align:-0.15em; animation:pre-blink 0.9s step-end infinite;
-}
-@keyframes pre-blink{ 50%{ opacity:0; } }
+.preloader-count .pct{ color:var(--accent); }
 
 /* ---------- NAV ---------- */
 #nav{
@@ -573,21 +547,8 @@ main{ position:relative; width:100%; overflow-x:hidden; }
 <body>
 
 <div id="preloader" aria-hidden="false">
-  <div class="pre-grid"></div>
-  <span class="pre-circle pre-circle-a"></span>
-  <span class="pre-circle pre-circle-b"></span>
-  <div class="pre-k">
-    <span class="k-line k-line-v" style="--rot:90deg; --jitter:-1.2deg; --delay:250ms"></span>
-    <span class="k-line k-line-v" style="--rot:90deg; --jitter:0deg; --delay:280ms"></span>
-    <span class="k-line k-line-v" style="--rot:90deg; --jitter:1.2deg; --delay:310ms"></span>
-    <span class="k-line k-line-d" style="--rot:-55deg; --jitter:-1deg; --delay:450ms"></span>
-    <span class="k-line k-line-d" style="--rot:-55deg; --jitter:0deg; --delay:480ms"></span>
-    <span class="k-line k-line-d" style="--rot:-55deg; --jitter:1deg; --delay:510ms"></span>
-    <span class="k-line k-line-d" style="--rot:55deg; --jitter:-1deg; --delay:650ms"></span>
-    <span class="k-line k-line-d" style="--rot:55deg; --jitter:0deg; --delay:680ms"></span>
-    <span class="k-line k-line-d" style="--rot:55deg; --jitter:1deg; --delay:710ms"></span>
-  </div>
-  <p class="pre-caption"><span id="pre-caption-text"></span><span class="pre-cursor"></span></p>
+  <div class="preloader-brand">Kium</div>
+  <div class="preloader-count"><span id="preloader-count-num">0</span><span class="pct">%</span></div>
 </div>
 
 <header id="nav">
@@ -1289,8 +1250,7 @@ function startHeroReveal(base){
 
 function initPreloader(){
   const pre = document.getElementById("preloader");
-  const captionEl = document.getElementById("pre-caption-text");
-  const CAPTION = "construyendo el lugar donde el lag no entra.";
+  const countEl = document.getElementById("preloader-count-num");
 
   if (REDUCED) {
     pre.style.display = "none";
@@ -1301,32 +1261,32 @@ function initPreloader(){
 
   window.scrollTo(0, 0);
   lenis.stop();
+  const dur = 2000;
+  const start = performance.now();
 
-  // grid + guide circles fade in, then the K's construction lines draw
-  // themselves in from a shared convergence point and solidify to white
-  requestAnimationFrame(() => pre.classList.add("grid-in"));
-  setTimeout(() => pre.classList.add("drawn"), 100);
-  setTimeout(() => pre.classList.add("solid"), 1400);
+  function frame(now){
+    const t = Math.min(1, (now - start) / dur);
+    countEl.textContent = Math.round(t * 100);
+    if (t < 1) { requestAnimationFrame(frame); }
+    else { finish(); }
+  }
+  requestAnimationFrame(frame);
 
-  setTimeout(() => {
-    let i = 0;
-    const type = setInterval(() => {
-      i++;
-      captionEl.textContent = CAPTION.slice(0, i);
-      if (i >= CAPTION.length) clearInterval(type);
-    }, 32);
-  }, 1950);
-
-  setTimeout(() => {
-    pre.classList.add("wipe");
+  function finish(){
+    pre.classList.add("fade-out");
     setTimeout(() => {
-      pre.style.pointerEvents = "none";
-      pre.setAttribute("aria-hidden", "true");
-      lenis.start();
-    }, 700);
-  }, 3700);
+      setTimeout(() => {
+        pre.classList.add("wipe");
+        setTimeout(() => {
+          pre.style.pointerEvents = "none";
+          pre.setAttribute("aria-hidden", "true");
+          lenis.start();
+        }, 700);
+      }, 200);
+    }, 300);
+  }
 
-  startHeroReveal(3550);
+  startHeroReveal(2500);
 }
 initPreloader();
 
