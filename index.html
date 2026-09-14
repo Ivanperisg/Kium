@@ -29,13 +29,13 @@ svg{display:block;}
 
 /* ---------- TOKENS ---------- */
 :root{
-  --background:#050708;
+  --background:#020304;
   --foreground:#f2f0e6;
-  --surface:#0d1114;
-  --surface-2:#12171b;
-  --muted:#7c8790;
-  --line:rgba(242,240,230,0.1);
-  --line-strong:rgba(242,240,230,0.22);
+  --surface:#080b0d;
+  --surface-2:#0d1317;
+  --muted:#8fa4ae;
+  --line:rgba(140,190,220,0.14);
+  --line-strong:rgba(140,190,220,0.3);
   --accent:#3d94ff;
   --accent-2:#8ccbff;
   --warm:#ffc94d;
@@ -74,8 +74,28 @@ body{
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
   overflow-x:hidden;
+  text-shadow:0 0 1px rgba(180,210,230,0.35), 0 0 10px rgba(120,170,200,0.2);
 }
 ::selection{ background:var(--accent); color:var(--background); }
+
+/* ---------- CRT / SCREEN OVERLAY ---------- */
+.crt-overlay{
+  position:fixed; inset:0; z-index:95; pointer-events:none;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0,0,0,0.5) 0px, rgba(0,0,0,0.5) 1px, transparent 2px, transparent 4px),
+    repeating-linear-gradient(to right, rgba(160,210,235,0.035) 0px, rgba(160,210,235,0.035) 1px, transparent 1px, transparent 4px),
+    radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.4) 78%, rgba(0,0,0,0.78) 100%);
+  animation:crt-flicker 7s ease-in-out infinite;
+}
+@keyframes crt-flicker{
+  0%,100%{ opacity:0.92; }
+  46%{ opacity:0.92; }
+  48%{ opacity:0.7; }
+  50%{ opacity:0.92; }
+  91%{ opacity:0.92; }
+  92.5%{ opacity:0.6; }
+  94%{ opacity:0.92; }
+}
 
 /* ---------- UTILITIES ---------- */
 .eyebrow{
@@ -88,7 +108,10 @@ body{
   content:"";width:0.5rem;height:0.5rem;border-radius:9999px;background:var(--accent);flex-shrink:0;
   box-shadow:0 0 6px var(--accent), 0 0 14px var(--accent), 0 0 28px color-mix(in srgb, var(--accent) 70%, transparent);
 }
-.line-mask{ overflow:hidden; display:block; }
+.line-mask{
+  overflow:hidden; display:block;
+  padding:0.28em 0.3em; margin:-0.28em -0.3em;
+}
 .line-inner{
   display:block; transform-origin:50% 100%;
   transform:perspective(700px) translateY(110%) rotateX(-50deg); opacity:0;
@@ -123,6 +146,7 @@ body{
 @media (prefers-reduced-motion: reduce){
   #preloader{ display:none !important; }
   .marquee-track{ animation:none !important; }
+  .crt-overlay{ animation:none !important; }
   [data-reveal], .line-inner, .letter, .word, .voice-portrait-item{
     transition:none !important; opacity:1 !important; transform:none !important;
   }
@@ -285,7 +309,7 @@ body{
 .hero-roles{
   font-family:var(--font-display); text-transform:uppercase; line-height:1.05; letter-spacing:-0.01em;
   color:var(--foreground); font-size:var(--fs-h3);
-  text-shadow:0 4px 24px rgba(0,0,0,0.6), 0 0 16px rgba(242,240,230,0.4), 0 0 44px rgba(242,240,230,0.18);
+  text-shadow:0 2px 10px rgba(0,0,0,0.6), 0 0 8px rgba(242,240,230,0.6), 0 0 20px rgba(242,240,230,0.3);
 }
 @media (min-width:640px){ .hero-roles{ font-size:var(--fs-h2); } }
 .hero-desc{
@@ -365,7 +389,7 @@ body{
   display:flex; flex-direction:column; align-items:center;
   font-family:var(--font-display); text-transform:uppercase; line-height:0.86; letter-spacing:-0.01em;
   color:var(--accent); font-size:var(--fs-mega);
-  text-shadow:0 0 4px #fff, 0 0 14px currentColor, 0 0 34px currentColor, 0 0 80px color-mix(in srgb, currentColor 85%, transparent), 0 0 160px color-mix(in srgb, currentColor 65%, transparent), 0 0 260px color-mix(in srgb, currentColor 45%, transparent);
+  text-shadow:0 0 2px #fff, 0 0 8px #fff, 0 0 18px currentColor, 0 0 36px currentColor, 0 0 64px color-mix(in srgb, currentColor 70%, transparent);
 }
 /* Sized per adaptive-grid tier (not just one breakpoint) so "HOSTING" never
    busts the viewport — each tier renormalizes root font-size independently,
@@ -373,7 +397,10 @@ body{
 @media (min-width:641px){  .hero-name{ font-size:8.5rem;  line-height:0.84; } }
 @media (min-width:1025px){ .hero-name{ font-size:13rem;   line-height:0.82; } }
 @media (min-width:1441px){ .hero-name{ font-size:17rem;   line-height:0.8;  } }
-.name-line{ display:block; white-space:nowrap; overflow:hidden; }
+.name-line{
+  display:block; white-space:nowrap; overflow:hidden;
+  padding:0.22em 0.35em; margin:-0.22em -0.35em;
+}
 .name-line .letter{
   display:inline-block; transform-origin:50% 100%;
   transform:perspective(500px) translateY(100%) rotateX(-60deg); opacity:0;
@@ -415,13 +442,13 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
 .heading-xl{
   margin-top:1.5rem; max-width:22ch; font-family:var(--font-display); text-transform:uppercase;
   line-height:0.95; letter-spacing:-0.01em; font-size:var(--fs-h2);
-  text-shadow:0 0 3px #fff, 0 0 16px rgba(242,240,230,0.55), 0 0 46px rgba(242,240,230,0.3), 0 0 90px rgba(242,240,230,0.15);
+  text-shadow:0 0 2px #fff, 0 0 10px rgba(242,240,230,0.7), 0 0 24px rgba(242,240,230,0.4), 0 0 42px rgba(242,240,230,0.22);
 }
 @media (min-width:640px){ .heading-xl{ font-size:var(--fs-h1); } }
 .heading-md{
   margin-top:1.5rem; max-width:22ch; font-family:var(--font-display); text-transform:uppercase;
   line-height:1; letter-spacing:-0.01em; font-size:var(--fs-h2);
-  text-shadow:0 0 3px #fff, 0 0 16px rgba(242,240,230,0.55), 0 0 46px rgba(242,240,230,0.3), 0 0 90px rgba(242,240,230,0.15);
+  text-shadow:0 0 2px #fff, 0 0 10px rgba(242,240,230,0.7), 0 0 24px rgba(242,240,230,0.4), 0 0 42px rgba(242,240,230,0.22);
 }
 .section-header-row{
   display:flex; flex-direction:column; gap:1rem;
@@ -482,7 +509,7 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
 }
 .plan-badge{
   position:absolute; top:1.25rem; left:1.25rem; font-family:var(--font-mono); font-size:var(--fs-eyebrow); font-weight:500;
-  text-transform:uppercase; letter-spacing:0.16em; color:var(--background);
+  text-transform:uppercase; letter-spacing:0.16em; color:var(--background); text-shadow:none;
   background:var(--warm); padding:0.4rem 0.9rem; border-radius:0;
   box-shadow:0 0 8px var(--warm), 0 0 22px color-mix(in srgb, var(--warm) 70%, transparent);
 }
@@ -626,6 +653,8 @@ main{ position:relative; width:100%; overflow-x:hidden; }
 </style>
 </head>
 <body>
+
+<div class="crt-overlay" aria-hidden="true"></div>
 
 <div id="preloader" aria-hidden="false">
   <div class="boot-grid"></div>
