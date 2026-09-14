@@ -272,6 +272,14 @@ body{
   filter:blur(2.5rem);
   opacity:0.55;
 }
+/* soft contact shadow so the ball reads as resting/grounded instead of
+   floating with a hard-cropped edge */
+.hero-art-shadow{
+  position:absolute; left:50%; bottom:11%; width:58%; height:7%;
+  transform:translateX(-50%);
+  background:radial-gradient(ellipse, rgba(0,0,0,0.55), transparent 72%);
+  filter:blur(1.25rem);
+}
 #pokeball-canvas{
   position:absolute; inset:0; width:100%; height:100%; display:block;
 }
@@ -589,6 +597,7 @@ main{ position:relative; width:100%; overflow-x:hidden; }
     <div class="hero-art-wrap">
       <div class="hero-art">
         <div class="hero-art-glow"></div>
+        <div class="hero-art-shadow"></div>
         <canvas id="pokeball-canvas" aria-hidden="true"></canvas>
       </div>
     </div>
@@ -1057,7 +1066,7 @@ async function initPokeball(){
     return; // CDN unreachable — the CSS glow behind the canvas stays as the visual
   }
 
-  const BASE_FOV = 30; // degrees, applied along whichever dimension is smaller
+  const BASE_FOV = 42; // degrees, applied along whichever dimension is smaller
 
   const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -1067,7 +1076,7 @@ async function initPokeball(){
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(BASE_FOV, 1, 0.1, 100);
-  camera.position.set(0, 0.25, 7.2);
+  camera.position.set(0, 0.15, 8.5);
 
   const group = new THREE.Group();
   scene.add(group);
@@ -1076,10 +1085,10 @@ async function initPokeball(){
   const key = new THREE.DirectionalLight(0xffffff, 1.6);
   key.position.set(3, 4, 5);
   scene.add(key);
-  const rimWarm = new THREE.PointLight(0xff6b57, 8, 20);
+  const rimWarm = new THREE.PointLight(0xf0b93d, 8, 20);
   rimWarm.position.set(-3.5, -1.5, 2.5);
   scene.add(rimWarm);
-  const rimAccent = new THREE.PointLight(0x7c5cff, 8, 20);
+  const rimAccent = new THREE.PointLight(0x3860c4, 8, 20);
   rimAccent.position.set(3, 2, -3);
   scene.add(rimAccent);
 
