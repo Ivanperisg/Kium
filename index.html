@@ -1,0 +1,1131 @@
+<!doctype html>
+<!--
+  KIUM — landing page (borrador / draft)
+
+  Antes de publicar, reemplazá:
+  - Precios de los planes en #plans ("desde $X/mes" — son placeholders)
+  - Email de contacto y dominio (hola@kium.gg)
+  - Links de Discord / X / YouTube en el footer (actualmente "#")
+  - Estadísticas de #impact (uptime, latencia, servidores activos) — son valores de ejemplo
+  - Testimonios de #voices — son testimonios de ejemplo, cambiar por reseñas reales de clientes
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kium — Hosting para servidores Cobblemon</title>
+<meta name="description" content="Kium ofrece hosting premium para servidores de Minecraft con Cobblemon: hardware dedicado, cero lag y soporte real 24/7." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- RESET ---------- */
+*{margin:0;padding:0;box-sizing:border-box;}
+img,video{display:block;max-width:100%;}
+ul,ol{list-style:none;}
+a{color:inherit;text-decoration:none;}
+button{font:inherit;color:inherit;background:none;border:0;appearance:none;cursor:pointer;}
+svg{display:block;}
+
+/* ---------- TOKENS ---------- */
+:root{
+  --background:#080b0d;
+  --foreground:#f2f0e6;
+  --surface:#111519;
+  --surface-2:#161c21;
+  --muted:#7c8790;
+  --line:rgba(242,240,230,0.1);
+  --line-strong:rgba(242,240,230,0.22);
+  --accent:#2f8fb8;
+  --accent-2:#5cb6d9;
+  --accent-deep:#123a4a;
+  --warm:#e7b75c;
+
+  --font-display:"Anton", sans-serif;
+  --font-sans:"Onest", sans-serif;
+
+  --gutter:2.5rem;
+  --section:9rem;
+
+  --fs-mega:4.25rem;
+  --fs-display:6.5rem;
+  --fs-h1:4.25rem;
+  --fs-h2:3rem;
+  --fs-h3:1.6rem;
+  --fs-lead:1.3rem;
+  --fs-body:1.0625rem;
+  --fs-eyebrow:0.8125rem;
+}
+@media (max-width:640px){
+  :root{ --gutter:16px; --section:6rem; }
+}
+
+/* ---------- ADAPTIVE REM GRID ---------- */
+html{ font-size:16px; background:var(--background); }
+@media (max-width:1920px){ html{ font-size:0.833333vw; } }
+@media (max-width:1440px){ html{ font-size:1.111111vw; } }
+@media (max-width:1024px){ html{ font-size:1.5625vw; } }
+@media (max-width:640px){ html{ font-size:4.444444vw; } }
+
+body{
+  background:var(--background);
+  color:var(--foreground);
+  font-family:var(--font-sans);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+::selection{ background:var(--accent); color:var(--background); }
+
+/* ---------- UTILITIES ---------- */
+.eyebrow{
+  display:flex;align-items:center;gap:0.75rem;
+  font-size:var(--fs-eyebrow);line-height:1.2;font-weight:500;
+  text-transform:uppercase;letter-spacing:0.22em;color:var(--muted);
+}
+.eyebrow::before{
+  content:"";width:0.5rem;height:0.5rem;border-radius:9999px;background:var(--accent);flex-shrink:0;
+}
+.line-mask{ overflow:hidden; display:block; }
+.line-inner{
+  display:block; transform:translateY(110%); opacity:0;
+  transition:transform 0.85s cubic-bezier(0.16,1,0.3,1), opacity 0.85s cubic-bezier(0.16,1,0.3,1);
+}
+.heading-lines.is-in .line-inner,
+.line-mask.is-in .line-inner{ transform:translateY(0); opacity:1; }
+
+[data-reveal].fade-up{
+  opacity:0; transform:translateY(28px);
+  transition:opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+[data-reveal].fade-up.is-in{ opacity:1; transform:none; }
+
+@media (prefers-reduced-motion: reduce){
+  #preloader{ display:none !important; }
+  .marquee-track{ animation:none !important; }
+  [data-reveal], .line-inner, .letter, .word, .voice-portrait-item{
+    transition:none !important; opacity:1 !important; transform:none !important;
+  }
+}
+
+/* ---------- PRELOADER ---------- */
+#preloader{
+  position:fixed; inset:0; z-index:100;
+  display:flex; padding:var(--gutter);
+  flex-direction:column; align-items:flex-start; justify-content:flex-end; gap:0.75rem;
+  transition:transform 0.65s cubic-bezier(0.22,1,0.36,1);
+}
+#preloader::before{
+  content:""; position:absolute; inset:0; z-index:-1; background:var(--background);
+}
+@media (min-width:640px){
+  #preloader{ flex-direction:row; align-items:flex-end; justify-content:space-between; gap:1rem; }
+}
+#preloader.fade-out .preloader-brand, #preloader.fade-out .preloader-count{
+  opacity:0; transition:opacity 0.3s ease-out;
+}
+#preloader.wipe{ transform:translateY(-100%); }
+.preloader-brand{
+  font-family:var(--font-display); font-size:var(--fs-h3); text-transform:uppercase;
+  line-height:1; letter-spacing:-0.01em; color:var(--foreground);
+}
+.preloader-count{
+  font-family:var(--font-display); font-size:var(--fs-display); line-height:1;
+  font-variant-numeric:tabular-nums; color:var(--foreground);
+}
+.preloader-count .pct{ color:var(--accent); }
+
+/* ---------- NAV ---------- */
+#nav{
+  position:fixed; inset-inline:0; top:0; z-index:50; pointer-events:none;
+}
+.nav-inner{
+  pointer-events:auto; display:flex; align-items:center; justify-content:space-between;
+  padding:1.5rem var(--gutter);
+}
+.logo{ display:flex; align-items:center; gap:0.75rem; }
+.logo-badge{
+  display:grid; place-items:center; width:2.5rem; height:2.5rem; border-radius:9999px;
+  border:1px solid var(--line-strong); font-weight:600; letter-spacing:-0.01em; font-size:1rem;
+}
+.logo-text{
+  font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase; letter-spacing:0.22em;
+  color:var(--muted); display:none;
+}
+@media (min-width:640px){ .logo-text{ display:block; } }
+
+.nav-links{ display:none; align-items:center; gap:2.5rem; }
+@media (min-width:768px){ .nav-links{ display:flex; } }
+.nav-links a{
+  position:relative; font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase;
+  letter-spacing:0.18em; color:var(--muted); transition:color 0.3s ease-out;
+}
+.nav-links a::after{
+  content:""; position:absolute; left:0; bottom:-0.25rem; height:1px; width:0;
+  background:var(--accent); transition:width 0.3s ease-out;
+}
+.nav-links a:hover{ color:var(--foreground); }
+.nav-links a:hover::after{ width:100%; }
+
+.burger{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:0.375rem; width:2.5rem; height:2.5rem;
+}
+@media (min-width:768px){ .burger{ display:none; } }
+.burger span{
+  height:0.125rem; width:1.5rem; background:var(--foreground);
+  transition:transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+.burger.open span:nth-child(1){ transform:translateY(0.5rem) rotate(45deg); }
+.burger.open span:nth-child(2){ opacity:0; }
+.burger.open span:nth-child(3){ transform:translateY(-0.5rem) rotate(-45deg); }
+
+#mobile-menu{
+  position:fixed; inset:0; z-index:45; background:var(--background);
+  display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+  padding-inline:var(--gutter); gap:0.5rem;
+  opacity:0; visibility:hidden; transition:opacity 0.45s ease-out;
+}
+#mobile-menu.open{ opacity:1; visibility:visible; }
+#mobile-menu ul{ display:flex; flex-direction:column; gap:0.5rem; }
+#mobile-menu li{ overflow:hidden; }
+#mobile-menu a{
+  display:block; font-family:var(--font-display); font-size:var(--fs-h2); text-transform:uppercase;
+  line-height:1; letter-spacing:-0.01em; color:var(--foreground);
+  transform:translateY(48px); opacity:0;
+  transition:transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+#mobile-menu.open li:nth-child(1) a{ transition-delay:0.12s; }
+#mobile-menu.open li:nth-child(2) a{ transition-delay:0.18s; }
+#mobile-menu.open li:nth-child(3) a{ transition-delay:0.24s; }
+#mobile-menu.open li:nth-child(4) a{ transition-delay:0.30s; }
+#mobile-menu.open li:nth-child(5) a{ transition-delay:0.36s; }
+#mobile-menu.open a{ transform:translateY(0); opacity:1; }
+
+/* ---------- LIQUID IMAGE ---------- */
+.liquid{ position:relative; overflow:hidden; background:var(--surface); }
+.liquid-svg{ width:0; height:0; position:absolute; }
+.liquid-fill{
+  position:absolute; inset:0;
+  background:radial-gradient(130% 130% at 30% 15%, var(--surface-2), var(--background));
+}
+.liquid-vignette{
+  position:absolute; inset:0;
+  background:radial-gradient(120% 120% at 50% 120%, rgba(8,11,13,0.7), transparent 60%);
+}
+.liquid-veil{
+  position:absolute; inset:0; mix-blend-mode:color; background:var(--surface-2);
+  opacity:0.88; transition:opacity 0.38s ease-out;
+}
+.liquid-glow{
+  position:absolute; inset:0; opacity:0; transition:opacity 0.34s ease-out;
+  background:linear-gradient(120deg, transparent 30%, color-mix(in srgb, var(--accent) 35%, transparent) 50%, transparent 70%);
+}
+.liquid-glow.warm{
+  background:linear-gradient(120deg, transparent 30%, color-mix(in srgb, var(--warm) 35%, transparent) 50%, transparent 70%);
+}
+.liquid:hover .liquid-veil{ opacity:0; }
+.liquid:hover .liquid-glow{ opacity:1; }
+.liquid.bare .liquid-fill, .liquid.bare .liquid-vignette, .liquid.bare .liquid-veil, .liquid.bare .liquid-glow{ display:none; }
+.liquid-content{ position:absolute; inset:0; }
+
+/* ---------- HERO ---------- */
+#top{
+  position:relative; display:flex; flex-direction:column; min-height:100svh; overflow:hidden;
+}
+.hero-toprow{
+  position:relative; z-index:30; display:flex; flex-direction:column; gap:2rem;
+  padding:7rem var(--gutter) 0;
+}
+@media (min-width:640px){
+  .hero-toprow{ flex-direction:row; align-items:flex-start; justify-content:space-between; gap:1rem; }
+}
+.hero-roles{
+  font-family:var(--font-display); text-transform:uppercase; line-height:1.05; letter-spacing:-0.01em;
+  color:var(--foreground); font-size:var(--fs-h3); text-shadow:0 4px 24px rgba(0,0,0,0.5);
+}
+@media (min-width:640px){ .hero-roles{ font-size:var(--fs-h2); } }
+.hero-desc{
+  max-width:26rem; font-size:var(--fs-body); color:var(--muted); text-shadow:0 2px 16px rgba(0,0,0,0.6);
+  opacity:0; transform:translateY(16px);
+  transition:opacity 0.55s cubic-bezier(0.16,1,0.3,1), transform 0.55s cubic-bezier(0.16,1,0.3,1);
+}
+@media (min-width:640px){ .hero-desc{ text-align:right; } }
+.hero-desc.is-in{ opacity:1; transform:none; }
+
+.hero-art-wrap{
+  position:absolute; z-index:20; pointer-events:none; bottom:0; left:50%;
+  transform:translateX(-50%); height:86vh; width:80vw;
+}
+@media (min-width:640px){ .hero-art-wrap{ width:48vw; } }
+@media (min-width:1024px){ .hero-art-wrap{ width:36vw; } }
+.hero-art{
+  position:absolute; inset:0; pointer-events:auto;
+  border-radius:44% 56% 52% 48% / 54% 46% 58% 42%;
+  overflow:hidden;
+}
+/* the gradient artwork lives on .liquid-content (the filtered element)
+   so the SVG displacement filter actually distorts visible pixels */
+.hero-art .liquid-content{
+  background:
+    radial-gradient(120% 90% at 25% 10%, color-mix(in srgb, var(--warm) 55%, transparent), transparent 55%),
+    linear-gradient(200deg, var(--accent-2) 0%, var(--accent) 38%, var(--accent-deep) 75%, #06121a 100%);
+}
+.hero-art .liquid-content::after{
+  content:"";
+  position:absolute; inset:0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 42px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 42px);
+  mix-blend-mode:overlay; opacity:0.6;
+}
+
+.hero-gradient-base{
+  position:absolute; inset-inline:0; bottom:0; z-index:20; height:26vh;
+  background:linear-gradient(to bottom, transparent, var(--background));
+}
+
+.hero-name{
+  position:absolute; z-index:10; inset-inline:0; bottom:0; transform:translateY(6%);
+  display:flex; flex-direction:column; align-items:center;
+  font-family:var(--font-display); text-transform:uppercase; line-height:0.86; letter-spacing:-0.01em;
+  color:var(--accent); font-size:var(--fs-mega);
+}
+/* Sized per adaptive-grid tier (not just one breakpoint) so "HOSTING" never
+   busts the viewport — each tier renormalizes root font-size independently,
+   so a single rem value that fits on desktop can overflow on tablet. */
+@media (min-width:641px){  .hero-name{ font-size:8.5rem;  line-height:0.84; } }
+@media (min-width:1025px){ .hero-name{ font-size:13rem;   line-height:0.82; } }
+@media (min-width:1441px){ .hero-name{ font-size:17rem;   line-height:0.8;  } }
+.name-line{ display:block; white-space:nowrap; overflow:hidden; }
+.name-line .letter{
+  display:inline-block; transform:translateY(100%); opacity:0;
+  transition:transform 0.9s cubic-bezier(0.16,1,0.3,1), opacity 0.9s cubic-bezier(0.16,1,0.3,1);
+}
+.name-line.is-in .letter{ transform:translateY(0); opacity:1; }
+
+.scroll-cue{
+  position:absolute; z-index:30; bottom:2rem; left:var(--gutter);
+  display:flex; align-items:center; gap:0.75rem; font-size:var(--fs-eyebrow);
+  text-transform:uppercase; letter-spacing:0.22em; color:var(--muted);
+  opacity:0; transition:opacity 0.6s ease-out;
+}
+.scroll-cue.is-in{ opacity:1; }
+.scroll-cue::before{ content:""; width:1px; height:2.5rem; background:var(--accent); }
+
+/* ---------- MARQUEE ---------- */
+.marquee{
+  overflow:hidden; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  padding-block:2rem;
+}
+.marquee-track{
+  display:flex; width:max-content; flex-wrap:nowrap;
+  animation:marquee 22s linear infinite;
+}
+@keyframes marquee{ from{ transform:translateX(0); } to{ transform:translateX(-50%); } }
+.marquee-item{
+  display:flex; align-items:center;
+  font-family:var(--font-display); font-size:var(--fs-h2); text-transform:uppercase; letter-spacing:-0.01em;
+}
+.marquee-dot{
+  margin-inline:2rem; width:0.625rem; height:0.625rem; border-radius:9999px; background:var(--accent); flex-shrink:0;
+}
+
+/* ---------- SECTION SHARED ---------- */
+section, footer#contact{ padding:var(--section) var(--gutter); }
+.heading-xl{
+  margin-top:1.5rem; max-width:22ch; font-family:var(--font-display); text-transform:uppercase;
+  line-height:0.95; letter-spacing:-0.01em; font-size:var(--fs-h2);
+}
+@media (min-width:640px){ .heading-xl{ font-size:var(--fs-h1); } }
+.heading-md{
+  margin-top:1.5rem; max-width:22ch; font-family:var(--font-display); text-transform:uppercase;
+  line-height:1; letter-spacing:-0.01em; font-size:var(--fs-h2);
+}
+.section-header-row{
+  display:flex; flex-direction:column; gap:1rem;
+}
+@media (min-width:640px){
+  .section-header-row{ flex-direction:row; align-items:flex-end; justify-content:space-between; }
+}
+.section-header-label{
+  font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.22em; color:var(--muted); flex-shrink:0;
+}
+
+/* ---------- STORY ---------- */
+.story-grid{ display:grid; grid-template-columns:1fr; gap:3rem; }
+@media (min-width:1024px){ .story-grid{ grid-template-columns:repeat(12,1fr); gap:var(--gutter); } }
+.story-left{ grid-column:1/-1; }
+@media (min-width:1024px){ .story-left{ grid-column:1/7; } }
+.story-right{ grid-column:1/-1; }
+@media (min-width:1024px){ .story-right{ grid-column:7/13; padding-top:0.5rem; } }
+.story-lead{
+  margin-top:2rem; max-width:46ch; font-size:var(--fs-lead); line-height:1.45; color:var(--muted);
+}
+.principle-list{ display:flex; flex-direction:column; }
+.principle{
+  display:grid; grid-template-columns:auto 1fr; column-gap:1.5rem;
+  border-top:1px solid var(--line); padding-block:2rem;
+}
+.principle:last-child{ border-bottom:1px solid var(--line); }
+.principle-index{
+  font-family:var(--font-sans); font-size:var(--fs-h3); font-weight:600;
+  font-variant-numeric:tabular-nums; color:var(--accent);
+}
+.principle-title{
+  font-family:var(--font-sans); font-size:var(--fs-h3); font-weight:600; letter-spacing:-0.01em;
+}
+.principle-text{
+  margin-top:0.75rem; max-width:44ch; font-size:var(--fs-body); line-height:1.6; color:var(--muted);
+}
+
+/* ---------- PLANS ---------- */
+.plans-list{
+  margin-top:4rem; display:grid; grid-template-columns:1fr; column-gap:var(--gutter); row-gap:4rem;
+}
+@media (min-width:768px){ .plans-list{ grid-template-columns:1fr 1fr; } }
+@media (min-width:768px){ .plan-card:nth-child(even){ margin-top:6rem; } }
+.plan-art{ aspect-ratio:16/11; width:100%; border-radius:0.125rem; }
+.plan-art-icon{
+  position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:flex-end; padding:1.5rem;
+  font-family:var(--font-display); font-size:5rem; line-height:1; color:rgba(242,240,230,0.18);
+}
+.plan-badge{
+  position:absolute; top:1.25rem; left:1.25rem; font-size:var(--fs-eyebrow); font-weight:500;
+  text-transform:uppercase; letter-spacing:0.16em; color:var(--background);
+  background:var(--warm); padding:0.4rem 0.9rem; border-radius:9999px;
+}
+.plan-row{
+  margin-top:1.5rem; border-top:1px solid var(--line); padding-top:1.25rem;
+  display:flex; align-items:flex-start; justify-content:space-between; gap:1.5rem;
+}
+.plan-name{
+  font-family:var(--font-sans); font-size:var(--fs-h3); font-weight:600; letter-spacing:-0.01em;
+  transition:color 0.34s ease-out;
+}
+.plan-card:hover .plan-name{ color:var(--accent); }
+.plan-blurb{ margin-top:0.5rem; max-width:42ch; font-size:var(--fs-body); color:var(--muted); }
+.plan-meta{ flex-shrink:0; text-align:right; }
+.plan-players{ font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
+.plan-price{
+  margin-top:0.5rem; font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase;
+  letter-spacing:0.18em; color:var(--accent);
+}
+.plan-specs{
+  margin-top:0.75rem; font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.22em; color:var(--muted);
+}
+
+/* ---------- IMPACT ---------- */
+.stats-grid{
+  margin-top:4rem; display:grid; grid-template-columns:1fr; border-top:1px solid var(--line);
+}
+@media (min-width:640px){ .stats-grid{ grid-template-columns:1fr 1fr; } }
+@media (min-width:1024px){ .stats-grid{ grid-template-columns:1fr 1fr 1fr 1fr; } }
+.stat-cell{
+  display:flex; flex-direction:column; gap:1rem; border-bottom:1px solid var(--line); padding-block:2.5rem;
+}
+@media (min-width:640px){
+  .stat-cell:nth-child(2n){ border-left:1px solid var(--line); padding-left:2rem; }
+}
+@media (min-width:1024px){
+  .stat-cell{ padding-block:3rem; }
+  .stat-cell:nth-child(2n){ border-left:none; padding-left:0; }
+  .stat-cell:nth-child(4n+2), .stat-cell:nth-child(4n+3), .stat-cell:nth-child(4n){ border-left:1px solid var(--line); padding-left:2rem; }
+  .stat-cell:nth-child(4n+1){ border-left:none; padding-left:0; }
+}
+.stat-figure{
+  font-family:var(--font-display); font-size:var(--fs-display); line-height:1; letter-spacing:-0.01em;
+  transition:color 0.34s ease-out;
+}
+.stat-cell:nth-child(odd) .stat-figure:hover{ color:var(--accent); }
+.stat-cell:nth-child(even) .stat-figure:hover{ color:var(--warm); }
+.stat-label{ max-width:20ch; font-size:var(--fs-body); text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); }
+
+/* ---------- VOICES ---------- */
+.voices-grid{ margin-top:4rem; display:grid; grid-template-columns:1fr; gap:2.5rem; }
+@media (min-width:1024px){ .voices-grid{ grid-template-columns:repeat(12,1fr); gap:var(--gutter); } }
+.voice-selector{ grid-column:1/-1; }
+@media (min-width:1024px){ .voice-selector{ grid-column:1/6; } }
+.voice-btn{
+  width:100%; display:flex; align-items:baseline; gap:1.25rem; text-align:left;
+  border-top:1px solid var(--line); padding-block:1.75rem;
+}
+.voice-btn:last-child{ border-bottom:1px solid var(--line); }
+.voice-idx{
+  font-size:var(--fs-eyebrow); font-variant-numeric:tabular-nums; letter-spacing:0.18em; color:var(--muted);
+  transition:color 0.3s ease-out;
+}
+.voice-meta{ display:flex; flex-direction:column; gap:0.25rem; }
+.voice-name{
+  font-family:var(--font-sans); font-size:var(--fs-h3); font-weight:600; letter-spacing:-0.01em; color:var(--muted);
+  transition:color 0.3s ease-out;
+}
+.voice-role{ font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
+.voice-rule{ margin-left:auto; align-self:center; height:1px; width:0; background:var(--accent); transition:width 0.3s ease-out; flex-shrink:0; }
+.voice-btn.active .voice-idx{ color:var(--accent); }
+.voice-btn.active .voice-name{ color:var(--foreground); }
+.voice-btn.active .voice-rule{ width:2.5rem; }
+
+.voice-panel{ grid-column:1/-1; }
+@media (min-width:1024px){ .voice-panel{ grid-column:6/13; } }
+.voice-panel-inner{ display:grid; grid-template-columns:1fr; gap:2rem; }
+@media (min-width:640px){ .voice-panel-inner{ grid-template-columns:1fr auto; align-items:flex-start; } }
+.voice-quote-wrap{ order:2; }
+@media (min-width:640px){ .voice-quote-wrap{ order:1; } }
+.voice-quote{ display:none; }
+.voice-quote.active{ display:block; }
+.voice-quote p{
+  max-width:30ch; font-family:var(--font-sans); font-size:var(--fs-h3); font-weight:500;
+  line-height:1.3; letter-spacing:-0.01em; color:var(--foreground);
+}
+.voice-quote .word{
+  display:inline-block; transform:translateY(18px); opacity:0;
+  transition:transform 0.52s cubic-bezier(0.165,0.84,0.44,1), opacity 0.52s cubic-bezier(0.165,0.84,0.44,1);
+}
+.voice-quote.replay .word{ transform:none; opacity:1; }
+.voice-footer-item{ display:none; margin-top:2rem; font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
+.voice-footer-item.active{ display:block; }
+
+.voice-portrait-wrap{ order:1; width:100%; }
+@media (min-width:640px){ .voice-portrait-wrap{ order:2; width:16rem; } }
+.voice-portrait-item{ display:none; aspect-ratio:4/5; width:100%; border-radius:0.125rem; opacity:0; transform:scale(1.06); transition:opacity 0.64s cubic-bezier(0.16,1,0.3,1), transform 0.64s cubic-bezier(0.16,1,0.3,1); }
+.voice-portrait-item.active{ display:block; }
+.voice-portrait-item.active.shown{ opacity:1; transform:scale(1); }
+.voice-initials{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-size:3rem; color:var(--foreground); opacity:0.9;
+}
+
+/* ---------- CONTACT / FOOTER ---------- */
+#contact{ padding-bottom:0; }
+.contact-desc{
+  margin-top:2rem; max-width:44ch; font-size:var(--fs-lead); line-height:1.45; color:var(--muted);
+}
+.email-link{
+  margin-top:3rem; display:inline-flex; align-items:baseline; gap:0.75rem;
+  font-family:var(--font-sans); font-size:var(--fs-h3); font-weight:600; letter-spacing:-0.01em;
+  word-break:break-all; transition:transform 0.34s ease-out, color 0.34s ease-out;
+}
+@media (min-width:640px){ .email-link{ font-size:var(--fs-h1); gap:1rem; } }
+.email-link:hover{ transform:translateX(14px); color:var(--accent); }
+.email-arrow{ color:var(--accent); }
+
+.footer-bar{
+  margin-top:var(--section); border-top:1px solid var(--line); padding-block:3rem;
+  display:grid; grid-template-columns:1fr; gap:2.5rem;
+}
+@media (min-width:1024px){ .footer-bar{ grid-template-columns:repeat(12,1fr); } }
+.footer-left{ grid-column:1/-1; }
+@media (min-width:1024px){ .footer-left{ grid-column:1/7; } }
+.footer-signature{ font-family:var(--font-display); font-size:var(--fs-h2); text-transform:uppercase; line-height:1; letter-spacing:-0.01em; }
+.footer-tagline{ margin-top:1rem; font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.22em; color:var(--muted); }
+.footer-social{ grid-column:1/-1; display:flex; flex-direction:column; gap:1rem; }
+@media (min-width:1024px){ .footer-social{ grid-column:7/10; } }
+.footer-social a{ display:inline-flex; align-items:center; gap:0.75rem; font-size:var(--fs-body); color:var(--muted); transition:color 0.3s ease-out; }
+.footer-social a::before{ content:""; display:inline-block; width:0; height:1px; background:var(--accent); transition:width 0.3s ease-out; }
+.footer-social a:hover{ color:var(--foreground); }
+.footer-social a:hover::before{ width:1.5rem; }
+.footer-right{ grid-column:1/-1; }
+@media (min-width:1024px){ .footer-right{ grid-column:10/13; text-align:right; } }
+.footer-copy{ font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
+
+main{ position:relative; width:100%; overflow-x:hidden; }
+</style>
+</head>
+<body>
+
+<div id="preloader" aria-hidden="false">
+  <div class="preloader-brand">Kium</div>
+  <div class="preloader-count"><span id="preloader-count-num">0</span><span class="pct">%</span></div>
+</div>
+
+<header id="nav">
+  <nav class="nav-inner" aria-label="Principal">
+    <a href="#top" class="logo">
+      <span class="logo-badge">K</span>
+      <span class="logo-text">Kium</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#story">Nosotros</a></li>
+      <li><a href="#plans">Planes</a></li>
+      <li><a href="#impact">Rendimiento</a></li>
+      <li><a href="#voices">Opiniones</a></li>
+      <li><a href="#contact">Contacto</a></li>
+    </ul>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+</header>
+
+<div id="mobile-menu">
+  <ul>
+    <li><a href="#story">Nosotros</a></li>
+    <li><a href="#plans">Planes</a></li>
+    <li><a href="#impact">Rendimiento</a></li>
+    <li><a href="#voices">Opiniones</a></li>
+    <li><a href="#contact">Contacto</a></li>
+  </ul>
+</div>
+
+<main>
+
+  <!-- HERO -->
+  <section id="top">
+    <div class="hero-toprow">
+      <h2 class="hero-roles">
+        <span class="line-mask"><span class="line-inner">Rápido</span></span>
+        <span class="line-mask"><span class="line-inner">Estable</span></span>
+        <span class="line-mask"><span class="line-inner">Seguro</span></span>
+        <span class="line-mask"><span class="line-inner">Sin Límites</span></span>
+      </h2>
+      <p class="hero-desc">Hosting de servidores Minecraft optimizado para Cobblemon. Hardware dedicado, cero lag y un equipo real detrás — para que tu comunidad juegue, no espere.</p>
+    </div>
+
+    <div class="hero-art-wrap">
+      <div class="hero-art liquid bare" data-scale="30">
+        <svg class="liquid-svg"><filter id="liquid-hero"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
+        <div class="liquid-content" style="filter:url(#liquid-hero)"></div>
+      </div>
+    </div>
+
+    <div class="hero-gradient-base"></div>
+
+    <h1 class="hero-name">
+      <span class="name-line" data-word="KIUM"></span>
+      <span class="name-line" data-word="HOSTING"></span>
+    </h1>
+
+    <div class="scroll-cue">Desliza para entrar</div>
+  </section>
+
+  <!-- MARQUEE -->
+  <section class="marquee" aria-label="Beneficios">
+    <div class="marquee-track" id="marquee-track"></div>
+  </section>
+
+  <!-- STORY -->
+  <section id="story">
+    <div class="story-grid">
+      <div class="story-left">
+        <span class="eyebrow">Quiénes Somos</span>
+        <h2 class="heading-xl heading-lines" data-reveal>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">La estabilidad es</span></span>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">la mejor función.</span></span>
+        </h2>
+        <p class="story-lead" data-reveal>Empezamos administrando nuestro propio servidor de Cobblemon y nos cansamos del lag, los crasheos y el soporte que nunca contestaba. Kium nace de esa bronca: infraestructura pensada por jugadores, para jugadores, con el mismo cuidado que le pondríamos a nuestro propio mundo.</p>
+      </div>
+      <div class="story-right">
+        <ul class="principle-list">
+          <li class="principle" data-reveal style="transition-delay:0ms">
+            <span class="principle-index">01</span>
+            <div>
+              <h3 class="principle-title">Hardware real, no promesas</h3>
+              <p class="principle-text">NVMe, CPUs dedicadas y RAM sin sobreventa en cada plan. Nada de recursos compartidos hasta el límite.</p>
+            </div>
+          </li>
+          <li class="principle" data-reveal style="transition-delay:90ms">
+            <span class="principle-index">02</span>
+            <div>
+              <h3 class="principle-title">Optimizado para Cobblemon</h3>
+              <p class="principle-text">Configuraciones y parches probados específicamente para el mod, no una plantilla genérica de Minecraft vanilla.</p>
+            </div>
+          </li>
+          <li class="principle" data-reveal style="transition-delay:180ms">
+            <span class="principle-index">03</span>
+            <div>
+              <h3 class="principle-title">Soporte humano, no un bot</h3>
+              <p class="principle-text">Un equipo real en Discord, respondiendo en minutos, no tickets que desaparecen en el vacío.</p>
+            </div>
+          </li>
+          <li class="principle" data-reveal style="transition-delay:270ms">
+            <span class="principle-index">04</span>
+            <div>
+              <h3 class="principle-title">Precio claro, sin sorpresas</h3>
+              <p class="principle-text">Lo que ves es lo que pagás. Sin límites ocultos ni cargos extra por jugador conectado.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANS -->
+  <section id="plans">
+    <div class="section-header-row">
+      <div>
+        <span class="eyebrow">Planes De Hosting</span>
+        <h2 class="heading-xl heading-lines" data-reveal>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">Elegí la potencia</span></span>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">que tu mundo necesita.</span></span>
+        </h2>
+      </div>
+      <span class="section-header-label">04 / Planes</span>
+    </div>
+
+    <ul class="plans-list">
+      <li class="plan-card" data-reveal>
+        <div class="plan-art liquid" data-scale="26">
+          <svg class="liquid-svg"><filter id="liquid-plan-1"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
+          <div class="liquid-content" style="filter:url(#liquid-plan-1)">
+            <div class="liquid-fill"></div>
+            <div class="liquid-vignette"></div>
+            <div class="liquid-veil"></div>
+            <div class="liquid-glow"></div>
+            <div class="plan-art-icon">01</div>
+          </div>
+        </div>
+        <div class="plan-row">
+          <div>
+            <h3 class="plan-name">Inicial</h3>
+            <p class="plan-blurb">Perfecto para probar Cobblemon con tu grupo de amigos antes de escalar.</p>
+          </div>
+          <div class="plan-meta">
+            <div class="plan-players">1–10 jugadores</div>
+            <div class="plan-price">Desde $X / mes</div>
+          </div>
+        </div>
+        <div class="plan-specs">4 GB RAM · 2 vCPU</div>
+      </li>
+
+      <li class="plan-card" data-reveal style="transition-delay:120ms">
+        <div class="plan-art liquid" data-scale="26">
+          <svg class="liquid-svg"><filter id="liquid-plan-2"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
+          <div class="liquid-content" style="filter:url(#liquid-plan-2)">
+            <div class="liquid-fill"></div>
+            <div class="liquid-vignette"></div>
+            <div class="liquid-veil"></div>
+            <div class="liquid-glow"></div>
+            <div class="plan-art-icon">02</div>
+            <span class="plan-badge">Más Popular</span>
+          </div>
+        </div>
+        <div class="plan-row">
+          <div>
+            <h3 class="plan-name">Evolución</h3>
+            <p class="plan-blurb">El punto justo entre precio y potencia para comunidades que están creciendo.</p>
+          </div>
+          <div class="plan-meta">
+            <div class="plan-players">10–30 jugadores</div>
+            <div class="plan-price">Desde $X / mes</div>
+          </div>
+        </div>
+        <div class="plan-specs">8 GB RAM · 4 vCPU</div>
+      </li>
+
+      <li class="plan-card" data-reveal>
+        <div class="plan-art liquid" data-scale="26">
+          <svg class="liquid-svg"><filter id="liquid-plan-3"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
+          <div class="liquid-content" style="filter:url(#liquid-plan-3)">
+            <div class="liquid-fill"></div>
+            <div class="liquid-vignette"></div>
+            <div class="liquid-veil"></div>
+            <div class="liquid-glow"></div>
+            <div class="plan-art-icon">03</div>
+          </div>
+        </div>
+        <div class="plan-row">
+          <div>
+            <h3 class="plan-name">Máxima Evolución</h3>
+            <p class="plan-blurb">Para servidores con eventos, varias dimensiones y mods pesados sin perder tick rate.</p>
+          </div>
+          <div class="plan-meta">
+            <div class="plan-players">30–80 jugadores</div>
+            <div class="plan-price">Desde $X / mes</div>
+          </div>
+        </div>
+        <div class="plan-specs">16 GB RAM · 6 vCPU</div>
+      </li>
+
+      <li class="plan-card" data-reveal style="transition-delay:120ms">
+        <div class="plan-art liquid" data-scale="26">
+          <svg class="liquid-svg"><filter id="liquid-plan-4"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
+          <div class="liquid-content" style="filter:url(#liquid-plan-4)">
+            <div class="liquid-fill"></div>
+            <div class="liquid-vignette"></div>
+            <div class="liquid-veil"></div>
+            <div class="liquid-glow"></div>
+            <div class="plan-art-icon">04</div>
+          </div>
+        </div>
+        <div class="plan-row">
+          <div>
+            <h3 class="plan-name">Legendario</h3>
+            <p class="plan-blurb">Infraestructura dedicada para las comunidades de Cobblemon más grandes de habla hispana.</p>
+          </div>
+          <div class="plan-meta">
+            <div class="plan-players">80+ jugadores</div>
+            <div class="plan-price">Precio a medida</div>
+          </div>
+        </div>
+        <div class="plan-specs">32 GB RAM · 8 vCPU dedicada</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- IMPACT -->
+  <section id="impact">
+    <div class="section-header-row">
+      <div>
+        <span class="eyebrow">En Números</span>
+        <h2 class="heading-md heading-lines" data-reveal>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">La confianza,</span></span>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">medida en datos.</span></span>
+        </h2>
+      </div>
+    </div>
+
+    <dl class="stats-grid">
+      <div class="stat-cell" data-reveal style="transition-delay:0ms">
+        <dd class="stat-figure">99.9%</dd>
+        <dt class="stat-label">Uptime garantizado por contrato</dt>
+      </div>
+      <div class="stat-cell" data-reveal style="transition-delay:110ms">
+        <dd class="stat-figure">&lt;20ms</dd>
+        <dt class="stat-label">Latencia promedio en la red</dt>
+      </div>
+      <div class="stat-cell" data-reveal style="transition-delay:220ms">
+        <dd class="stat-figure">150+</dd>
+        <dt class="stat-label">Servidores Cobblemon activos</dt>
+      </div>
+      <div class="stat-cell" data-reveal style="transition-delay:330ms">
+        <dd class="stat-figure">24/7</dd>
+        <dt class="stat-label">Soporte real, todos los días</dt>
+      </div>
+    </dl>
+  </section>
+
+  <!-- VOICES -->
+  <section id="voices">
+    <div class="section-header-row">
+      <div>
+        <span class="eyebrow">Opiniones</span>
+        <h2 class="heading-md heading-lines" data-reveal>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">Lo que dicen</span></span>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">los administradores.</span></span>
+        </h2>
+      </div>
+    </div>
+
+    <div class="voices-grid">
+      <ul class="voice-selector">
+        <li><button class="voice-btn" data-voice="0"><span class="voice-idx">01</span><span class="voice-meta"><span class="voice-name">Tomás R.</span><span class="voice-role">Admin, PokeAndes SMP</span></span><span class="voice-rule"></span></button></li>
+        <li><button class="voice-btn" data-voice="1"><span class="voice-idx">02</span><span class="voice-meta"><span class="voice-name">Valentina G.</span><span class="voice-role">Fundadora, CobbleReino</span></span><span class="voice-rule"></span></button></li>
+        <li><button class="voice-btn" data-voice="2"><span class="voice-idx">03</span><span class="voice-meta"><span class="voice-name">Nico F.</span><span class="voice-role">Dev, VoltMon Network</span></span><span class="voice-rule"></span></button></li>
+      </ul>
+
+      <div class="voice-panel">
+        <div class="voice-panel-inner">
+          <div class="voice-quote-wrap">
+            <blockquote class="voice-quote active" data-quote="0"><p>“<span data-text="Migramos nuestro servidor de Cobblemon a Kium y el lag desapareció. Los jugadores lo notaron el primer día."></span>”</p></blockquote>
+            <blockquote class="voice-quote" data-quote="1"><p>“<span data-text="El soporte me respondió a la 1 de la madrugada un sábado. Eso no lo conseguís en cualquier hosting."></span>”</p></blockquote>
+            <blockquote class="voice-quote" data-quote="2"><p>“<span data-text="Corremos mods pesados y varias dimensiones sin que el TPS se caiga. Kium aguanta lo que le tiremos."></span>”</p></blockquote>
+            <footer class="voice-footer-item active" data-footer="0">Tomás R. — Admin, PokeAndes SMP</footer>
+            <footer class="voice-footer-item" data-footer="1">Valentina G. — Fundadora, CobbleReino</footer>
+            <footer class="voice-footer-item" data-footer="2">Nico F. — Dev, VoltMon Network</footer>
+          </div>
+          <div class="voice-portrait-wrap">
+            <div class="voice-portrait-item liquid active" data-portrait="0" data-scale="20">
+              <svg class="liquid-svg"><filter id="liquid-voice-1"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
+              <div class="liquid-content" style="filter:url(#liquid-voice-1)"><div class="liquid-fill"></div><div class="liquid-vignette"></div><div class="liquid-veil"></div><div class="liquid-glow warm"></div><div class="voice-initials">TR</div></div>
+            </div>
+            <div class="voice-portrait-item liquid" data-portrait="1" data-scale="20">
+              <svg class="liquid-svg"><filter id="liquid-voice-2"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
+              <div class="liquid-content" style="filter:url(#liquid-voice-2)"><div class="liquid-fill"></div><div class="liquid-vignette"></div><div class="liquid-veil"></div><div class="liquid-glow warm"></div><div class="voice-initials">VG</div></div>
+            </div>
+            <div class="voice-portrait-item liquid" data-portrait="2" data-scale="20">
+              <svg class="liquid-svg"><filter id="liquid-voice-3"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
+              <div class="liquid-content" style="filter:url(#liquid-voice-3)"><div class="liquid-fill"></div><div class="liquid-vignette"></div><div class="liquid-veil"></div><div class="liquid-glow warm"></div><div class="voice-initials">NF</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT / FOOTER -->
+  <footer id="contact">
+    <span class="eyebrow">Empezá Ahora</span>
+    <h2 class="heading-xl heading-lines" data-reveal>
+      <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">¿Tu comunidad merece</span></span>
+      <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">algo mejor que lag?</span></span>
+    </h2>
+    <p class="contact-desc" data-reveal>Armamos tu servidor de Cobblemon en minutos. Sin contratos largos, sin letra chica.</p>
+    <a class="email-link" href="mailto:hola@kium.gg">hola@kium.gg<span class="email-arrow">↗</span></a>
+
+    <div class="footer-bar">
+      <div class="footer-left">
+        <p class="footer-signature">Kium</p>
+        <p class="footer-tagline">Hosting para comunidades Cobblemon.</p>
+      </div>
+      <nav class="footer-social" aria-label="Redes sociales">
+        <a href="#" target="_blank" rel="noreferrer noopener">Discord</a>
+        <a href="#" target="_blank" rel="noreferrer noopener">X / Twitter</a>
+        <a href="#" target="_blank" rel="noreferrer noopener">YouTube</a>
+      </nav>
+      <div class="footer-right">
+        <p class="footer-copy">© 2026 Kium. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<script type="importmap">
+{ "imports": { "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.3.19/dist/lenis.mjs" } }
+</script>
+<script type="module">
+(async () => {
+
+let Lenis = null;
+try {
+  const mod = await import("lenis");
+  Lenis = mod.default;
+} catch (e) {
+  Lenis = null; // CDN unreachable — degrade to native smooth scroll below
+}
+
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- adaptive grid scale-up above 1920px ---------- */
+const FONT_BASE = 16, BASE_W = 1920, COEF = 0.6666;
+function applyAdaptiveGrid(){
+  const w = window.innerWidth;
+  const reduction = ((BASE_W - w) / BASE_W) * 100 * COEF;
+  const size = FONT_BASE - (FONT_BASE * reduction) / 100;
+  if (size > FONT_BASE) document.documentElement.style.fontSize = size + "px";
+  else document.documentElement.style.removeProperty("font-size");
+}
+applyAdaptiveGrid();
+addEventListener("resize", applyAdaptiveGrid);
+
+/* ---------- Lenis (falls back to native smooth scroll if the CDN import failed) ---------- */
+let lenis;
+if (Lenis) {
+  lenis = new Lenis({ smoothWheel: true });
+  function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+} else {
+  lenis = {
+    scrollTo: (el) => el.scrollIntoView({ behavior: "smooth" }),
+    stop: () => {},
+    start: () => {},
+  };
+}
+window.lenis = lenis;
+
+document.querySelectorAll('a[href^="#"]').forEach((a) => {
+  a.addEventListener("click", (e) => {
+    const id = a.getAttribute("href");
+    if (id.length > 1) {
+      const target = document.querySelector(id);
+      if (target) {
+        e.preventDefault();
+        lenis.scrollTo(target);
+      }
+    }
+  });
+});
+
+/* ---------- letter-split hero name ---------- */
+document.querySelectorAll(".name-line[data-word]").forEach((line) => {
+  const word = line.dataset.word;
+  [...word].forEach((ch, i) => {
+    const span = document.createElement("span");
+    span.className = "letter";
+    span.textContent = ch;
+    span.style.transitionDelay = (i * 52) + "ms";
+    line.appendChild(span);
+  });
+});
+
+/* ---------- word-split voice quotes ---------- */
+document.querySelectorAll(".voice-quote [data-text]").forEach((el) => {
+  const words = el.dataset.text.split(" ");
+  el.textContent = "";
+  words.forEach((w, i) => {
+    const span = document.createElement("span");
+    span.className = "word";
+    span.style.transitionDelay = (i * 22) + "ms";
+    span.textContent = w + (i < words.length - 1 ? " " : "");
+    el.appendChild(span);
+  });
+});
+
+/* ---------- marquee content (doubled for seamless loop) ---------- */
+const MARQUEE_WORDS = ["Cero Lag", "Cobblemon Optimizado", "SSD NVMe", "Soporte 24/7", "Anti-DDoS Incluido"];
+const track = document.getElementById("marquee-track");
+for (let pass = 0; pass < 2; pass++) {
+  MARQUEE_WORDS.forEach((w) => {
+    const item = document.createElement("span");
+    item.className = "marquee-item";
+    item.textContent = w;
+    track.appendChild(item);
+    const dot = document.createElement("span");
+    dot.className = "marquee-dot";
+    track.appendChild(dot);
+  });
+}
+
+/* ---------- generic scroll reveal ---------- */
+function initReveal(){
+  const items = document.querySelectorAll("[data-reveal]");
+  if (REDUCED) { items.forEach((el) => el.classList.add("is-in")); return; }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-in");
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0 });
+  items.forEach((el) => io.observe(el));
+}
+initReveal();
+
+/* ---------- mobile menu ---------- */
+const burger = document.getElementById("burger");
+const menu = document.getElementById("mobile-menu");
+burger.addEventListener("click", () => {
+  const open = menu.classList.toggle("open");
+  burger.classList.toggle("open", open);
+  burger.setAttribute("aria-expanded", open ? "true" : "false");
+  document.body.style.overflow = open ? "hidden" : "";
+});
+menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => {
+  menu.classList.remove("open");
+  burger.classList.remove("open");
+  document.body.style.overflow = "";
+}));
+
+/* ---------- liquid image hover distortion ---------- */
+function initLiquid(){
+  const finePointer = matchMedia("(hover:hover) and (pointer:fine)").matches && window.innerWidth > 768;
+  if (REDUCED || !finePointer) return;
+  document.querySelectorAll(".liquid").forEach((el) => {
+    const disp = el.querySelector("feDisplacementMap");
+    const turb = el.querySelector("feTurbulence");
+    if (!disp || !turb) return;
+    const maxScale = parseFloat(el.dataset.scale || "24");
+    const state = { scale: 0, freq: 0.009, tScale: 0, tFreq: 0.009 };
+    let raf = null;
+    function tick(){
+      state.scale += (state.tScale - state.scale) * 0.14;
+      state.freq += (state.tFreq - state.freq) * 0.14;
+      disp.setAttribute("scale", state.scale.toFixed(3));
+      turb.setAttribute("baseFrequency", state.freq.toFixed(4));
+      if (Math.abs(state.tScale - state.scale) > 0.05 || Math.abs(state.tFreq - state.freq) > 0.0002) {
+        raf = requestAnimationFrame(tick);
+      } else { raf = null; }
+    }
+    function start(){ if (!raf) raf = requestAnimationFrame(tick); }
+    el.addEventListener("pointerenter", () => { state.tScale = maxScale; state.tFreq = 0.022; start(); });
+    el.addEventListener("pointerleave", () => { state.tScale = 0; state.tFreq = 0.009; start(); });
+  });
+}
+initLiquid();
+
+/* ---------- voices interactivity ---------- */
+function initVoices(){
+  const buttons = document.querySelectorAll(".voice-btn");
+  const quotes = document.querySelectorAll(".voice-quote");
+  const footers = document.querySelectorAll(".voice-footer-item");
+  const portraits = document.querySelectorAll(".voice-portrait-item");
+
+  function setActive(idx){
+    buttons.forEach((b, i) => b.classList.toggle("active", i === idx));
+    footers.forEach((f, i) => f.classList.toggle("active", i === idx));
+    portraits.forEach((p, i) => {
+      const active = i === idx;
+      p.classList.toggle("active", active);
+      if (active) requestAnimationFrame(() => p.classList.add("shown"));
+    });
+    quotes.forEach((q, i) => {
+      const active = i === idx;
+      q.classList.toggle("active", active);
+      if (active) {
+        q.classList.remove("replay");
+        void q.offsetWidth;
+        requestAnimationFrame(() => q.classList.add("replay"));
+      }
+    });
+  }
+  buttons.forEach((b, i) => {
+    b.addEventListener("click", () => setActive(i));
+  });
+
+  const voicesSection = document.getElementById("voices");
+  if (REDUCED) { setActive(0); return; }
+  let started = false;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && !started) {
+        started = true;
+        setActive(0);
+        io.unobserve(voicesSection);
+      }
+    });
+  }, { threshold: 0.15 });
+  io.observe(voicesSection);
+}
+initVoices();
+
+/* ---------- preloader + hero reveal sequence ---------- */
+function startHeroReveal(base){
+  const roleLines = document.querySelectorAll(".hero-roles .line-mask");
+  const desc = document.querySelector(".hero-desc");
+  const nameLines = document.querySelectorAll(".hero-name .name-line");
+  const cue = document.querySelector(".scroll-cue");
+  setTimeout(() => nameLines[0] && nameLines[0].classList.add("is-in"), base);
+  setTimeout(() => nameLines[1] && nameLines[1].classList.add("is-in"), base + 240);
+  roleLines.forEach((el, i) => setTimeout(() => el.classList.add("is-in"), base + 200 + i * 80));
+  setTimeout(() => desc && desc.classList.add("is-in"), base + 400);
+  setTimeout(() => cue && cue.classList.add("is-in"), base + 900);
+}
+
+function initPreloader(){
+  const pre = document.getElementById("preloader");
+  const countEl = document.getElementById("preloader-count-num");
+
+  if (REDUCED) {
+    pre.style.display = "none";
+    pre.setAttribute("aria-hidden", "true");
+    startHeroReveal(0);
+    return;
+  }
+
+  window.scrollTo(0, 0);
+  lenis.stop();
+  const dur = 2000;
+  const start = performance.now();
+
+  function frame(now){
+    const t = Math.min(1, (now - start) / dur);
+    countEl.textContent = Math.round(t * 100);
+    if (t < 1) { requestAnimationFrame(frame); }
+    else { finish(); }
+  }
+  requestAnimationFrame(frame);
+
+  function finish(){
+    pre.classList.add("fade-out");
+    setTimeout(() => {
+      setTimeout(() => {
+        pre.classList.add("wipe");
+        setTimeout(() => {
+          pre.style.pointerEvents = "none";
+          pre.setAttribute("aria-hidden", "true");
+          lenis.start();
+        }, 700);
+      }, 200);
+    }, 300);
+  }
+
+  startHeroReveal(2500);
+}
+initPreloader();
+
+})();
+</script>
+</body>
+</html>
