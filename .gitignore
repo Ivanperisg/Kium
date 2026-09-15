@@ -1,0 +1,5 @@
+# AI coding tool config/skills — local install, not project source
+.claude/
+.agents/
+.codex/
+.impeccable/
