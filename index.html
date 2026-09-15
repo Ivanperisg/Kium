@@ -1243,6 +1243,14 @@ function initPreloader(){
         // transition an explicit, unambiguous starting point.
         const cs = getComputedStyle(bootBadge);
         bootBadge.style.transition = "none";
+        // Kill the boot-power-on keyframe animation before freezing: CSS
+        // animations win the cascade over inline styles, so while it's still
+        // running (the "finishing" class that stops it via CSS hasn't been
+        // added yet) it keeps forcing opacity/filter back to its own value —
+        // any transition targeted at opacity below would get silently
+        // overridden and only "apply" the instant the animation is removed,
+        // rendering as a snap instead of a transition.
+        bootBadge.style.animation = "none";
         bootBadge.style.opacity = cs.opacity;
         bootBadge.style.filter = cs.filter;
         bootBadge.style.transform = "none";
