@@ -34,7 +34,7 @@ Admins discover and evaluate Kium via the marketing site, then manage their rela
 
 - Name: Kium. Contact address: hola@kium.gg.
 - Plan names are a Pokémon Poké Ball tier reference (Poké Ball / Ultra Ball / Master Ball), a deliberate nod to the Cobblemon/Pokémon theme — preserve this naming convention for any future plan additions.
-- No logo or brand image assets exist yet; the current identity is entirely typographic/UI (HUD/terminal-style dark UI, "Kium.sys" boot sequence on load), not an applied logo mark.
+- A logo mark now exists and is applied: `assets/logo-k.png` (the standalone "K" glyph, used as favicon and in the boot preloader) and `assets/logo-full.png` (the full "KIUM HOSTING" lockup, used in the nav). The preloader animates the K flying into place and cross-fading into the full lockup. This sits alongside the identity's HUD/terminal-style dark UI and "Kium.sys" boot sequence, not in place of it.
 
 ## Evidence on Hand
 
