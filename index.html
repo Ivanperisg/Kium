@@ -15,6 +15,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Kium — Hosting para servidores Cobblemon</title>
 <meta name="description" content="Kium ofrece hosting premium para servidores de Minecraft con Cobblemon: hardware dedicado, cero lag y soporte real 24/7." />
+<link rel="icon" type="image/png" href="assets/logo-k.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
@@ -61,7 +62,7 @@ svg{display:block;}
 }
 
 /* ---------- ADAPTIVE REM GRID ---------- */
-html{ font-size:16px; background:var(--background); }
+html{ font-size:16px; background:var(--background); scrollbar-gutter:stable; }
 @media (max-width:1920px){ html{ font-size:0.833333vw; } }
 @media (max-width:1440px){ html{ font-size:1.111111vw; } }
 @media (max-width:1024px){ html{ font-size:1.5625vw; } }
@@ -150,48 +151,71 @@ body{
   [data-reveal], .line-inner, .letter, .word, .voice-portrait-item{
     transition:none !important; opacity:1 !important; transform:none !important;
   }
+  .logo-mark{
+    animation:none !important;
+    opacity:1 !important;
+  }
 }
 
-/* ---------- PRELOADER: terminal boot sequence ---------- */
+/* ---------- PRELOADER: logo power-on sequence ---------- */
 #preloader{
   position:fixed; inset:0; z-index:100;
   display:flex; align-items:center; justify-content:center; padding:var(--gutter);
-  transition:transform 0.65s cubic-bezier(0.22,1,0.36,1);
 }
 #preloader::before{
   content:""; position:absolute; inset:0; z-index:-1; background:var(--background);
 }
-#preloader.wipe{ transform:translateY(-100%); }
-.boot-grid{
-  position:absolute; inset:0;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(242,240,230,0.06) 0 1px, transparent 1px 40px),
-    repeating-linear-gradient(90deg, rgba(242,240,230,0.06) 0 1px, transparent 1px 40px);
+#preloader.finishing{ pointer-events:none; }
+#preloader.finishing::before{ transition:opacity 0.6s ease-out 0.1s; opacity:0; }
+
+.boot-stage{ position:relative; display:flex; flex-direction:column; align-items:center; gap:2.25rem; }
+.boot-glow{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:24rem; height:24rem; border-radius:50%; pointer-events:none;
+  background:radial-gradient(closest-side, color-mix(in srgb, var(--accent) 35%, transparent), transparent 70%);
+  filter:blur(2rem);
+  opacity:0; animation:boot-glow-in 1.4s ease-out 0.15s 1 both;
 }
-.boot-panel{ position:relative; width:min(28rem, 90vw); font-family:var(--font-mono); }
-.boot-log{
-  min-height:8.5rem; font-size:0.8125rem; line-height:1.7; letter-spacing:0.02em;
-  color:var(--foreground); text-transform:uppercase;
+@keyframes boot-glow-in{ 0%{ opacity:0; } 55%{ opacity:0.22; } 100%{ opacity:0.55; } }
+#preloader.finishing .boot-glow{ animation:none; transition:opacity 0.3s ease-out; opacity:0; }
+
+.boot-logo{ position:relative; display:flex; align-items:center; }
+.boot-logo-mark{
+  display:block; width:min(13rem, 44vw); height:auto;
+  animation:boot-power-on 1.4s linear 0.15s 1 both;
 }
-.boot-line{ display:flex; }
-.boot-log{ text-shadow:0 0 4px rgba(242,240,230,0.4), 0 0 16px rgba(242,240,230,0.15); }
-.boot-prompt{ color:var(--accent); margin-right:0.5rem; flex-shrink:0; text-shadow:0 0 6px currentColor, 0 0 16px currentColor; }
-.boot-ok{ color:var(--warm); margin-left:0.5rem; flex-shrink:0; text-shadow:0 0 6px currentColor, 0 0 16px currentColor; }
-.boot-cursor{
-  display:inline-block; width:0.5em; height:1em; background:var(--accent);
-  box-shadow:0 0 6px var(--accent), 0 0 16px var(--accent);
-  margin-left:0.15em; vertical-align:-0.15em; animation:boot-blink 0.85s step-end infinite;
+@keyframes boot-power-on{
+  0%   { opacity:0.12; filter:grayscale(1) brightness(0.3); }
+  8%   { opacity:0.55; filter:grayscale(0.7) brightness(0.6); }
+  14%  { opacity:0.15; filter:grayscale(1) brightness(0.3); }
+  22%  { opacity:0.7;  filter:grayscale(0.4) brightness(0.8); }
+  30%  { opacity:0.25; filter:grayscale(0.9) brightness(0.4); }
+  45%  { opacity:0.85; filter:grayscale(0.1) brightness(0.95); }
+  60%  { opacity:1;    filter:grayscale(0) brightness(1); }
+  100% { opacity:1;    filter:grayscale(0) brightness(1); }
 }
-@keyframes boot-blink{ 50%{ opacity:0; } }
-.boot-bar{ margin-top:1.5rem; height:0.4rem; width:100%; background:var(--line); position:relative; overflow:hidden; }
+/* The flight (transform/opacity/filter) is driven entirely by inline styles
+   set in finish() — handing a property straight from this CSS animation to a
+   CSS transition on the same property is an ambiguous, browser-inconsistent
+   handoff. This just stops the animation as a fallback if that JS ever fails. */
+#preloader.finishing .boot-logo-mark{ animation:none; }
+.boot-meter{
+  width:min(15rem, 60vw); opacity:0; animation:boot-meter-in 0.4s ease-out 0.75s 1 both;
+}
+@keyframes boot-meter-in{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+#preloader.finishing .boot-meter{
+  animation:none;
+  transition:opacity 0.28s ease-out, transform 0.28s ease-out;
+  opacity:0; transform:translateY(6px);
+}
+.boot-bar{ height:0.4rem; width:100%; background:var(--line); position:relative; overflow:hidden; }
 .boot-bar-fill{
   display:block; height:100%; width:0%;
   background:repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 9px);
   box-shadow:0 0 10px var(--accent);
-  transition:width 0.3s linear;
 }
 .boot-label{
-  margin-top:0.6rem; display:flex; justify-content:space-between;
+  margin-top:0.6rem; display:flex; justify-content:space-between; font-family:var(--font-mono);
   font-size:0.6875rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted);
 }
 
@@ -203,20 +227,20 @@ body{
   pointer-events:auto; display:flex; align-items:center; justify-content:space-between;
   padding:1.5rem var(--gutter);
 }
-.logo{ display:flex; align-items:center; gap:0.75rem; }
-.logo-badge{
-  display:grid; place-items:center; width:2.5rem; height:2.5rem; border-radius:9999px;
-  border:1px solid var(--accent); font-weight:600; letter-spacing:-0.01em; font-size:1rem;
-  color:var(--accent); box-shadow:0 0 6px var(--accent), 0 0 16px color-mix(in srgb, var(--accent) 60%, transparent);
-  text-shadow:0 0 6px currentColor, 0 0 14px currentColor;
+.logo{ display:flex; align-items:center; }
+.logo-mark{
+  display:block; height:4.75rem; width:auto; max-width:34vw;
+  filter:brightness(1.2) drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 70%, transparent)) drop-shadow(0 0 26px color-mix(in srgb, var(--accent) 45%, transparent));
+  /* Pure-CSS, not JS-triggered: if the boot script ever errors out or races,
+     the logo must still resolve to fully visible on its own after a fixed
+     delay instead of staying stuck invisible forever. The boot K already sits
+     in this exact spot by the time this fades in, so it reads as "the rest of
+     the wordmark appears" rather than a wipe or reveal effect. Keep this delay
+     roughly matched to POWER_ON_MS + HOLD_MS + FLIGHT_MS in the boot script. */
+  opacity:0;
+  animation:logo-fade-in 0.4s ease-out 2.5s 1 both;
 }
-.logo-text{
-  font-family:var(--font-mono);
-  font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase; letter-spacing:0.22em;
-  color:var(--accent-2); text-shadow:0 0 4px currentColor, 0 0 14px color-mix(in srgb, currentColor 70%, transparent);
-  display:none;
-}
-@media (min-width:640px){ .logo-text{ display:block; } }
+@keyframes logo-fade-in{ to{ opacity:1; } }
 
 .nav-links{ display:none; align-items:center; gap:2.5rem; }
 @media (min-width:768px){ .nav-links{ display:flex; } }
@@ -332,51 +356,9 @@ body{
 }
 .hero-art-glow{
   position:absolute; inset:0; border-radius:50%;
-  background:
-    radial-gradient(55% 50% at 38% 32%, color-mix(in srgb, var(--warm) 40%, transparent), transparent 70%),
-    radial-gradient(65% 60% at 65% 70%, color-mix(in srgb, var(--accent) 50%, transparent), transparent 70%);
+  background:radial-gradient(60% 55% at 50% 45%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%);
   filter:blur(2.5rem);
   opacity:0.5;
-}
-
-/* ---------- HERO HUD PANEL (radar / live status readout) ---------- */
-.hero-hud{
-  position:relative; z-index:1; width:min(92%, 27rem); aspect-ratio:1/1;
-  background:color-mix(in srgb, var(--surface) 45%, transparent);
-  --hud-corner-color:var(--accent);
-  transition:transform 0.4s ease-out;
-}
-.hero-hud.tilting{ transition:transform 0.08s linear; }
-.hero-hud-grid{
-  position:absolute; inset:0;
-  background-image:
-    repeating-linear-gradient(0deg, var(--line) 0 1px, transparent 1px 25%),
-    repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 25%);
-}
-.hero-radar{ position:absolute; inset:9%; width:82%; height:82%; overflow:visible; }
-.radar-ring{ fill:none; stroke:var(--accent); stroke-width:1; opacity:0.5; filter:drop-shadow(0 0 3px var(--accent)); }
-.radar-ring.dash{ stroke-dasharray:2 5; }
-.radar-crosshair{ stroke:var(--accent); stroke-width:1; opacity:0.35; }
-.radar-sweep{ transform-origin:100px 100px; animation:radar-spin 5s linear infinite; filter:drop-shadow(0 0 6px var(--accent)); }
-.radar-sweep path{ fill:url(#radarFadeHero); }
-@keyframes radar-spin{ to{ transform:rotate(360deg); } }
-.radar-blip{ fill:var(--warm); animation:radar-blink 2.4s ease-in-out infinite; filter:drop-shadow(0 0 4px var(--warm)); }
-.radar-blip-2{ fill:var(--accent-2); animation-delay:0.8s; filter:drop-shadow(0 0 4px var(--accent-2)); }
-.radar-blip-3{ fill:var(--accent-2); animation-delay:1.6s; filter:drop-shadow(0 0 4px var(--accent-2)); }
-@keyframes radar-blink{ 0%,100%{ opacity:0.2; } 50%{ opacity:1; } }
-
-.hero-hud-readout{
-  position:absolute; inset-inline:0; bottom:0; padding:0.85rem 1rem;
-  border-top:1px solid var(--line);
-  font-family:var(--font-mono); font-size:0.6875rem; letter-spacing:0.06em;
-  display:flex; flex-direction:column; gap:0.3rem;
-}
-.hud-line{ display:flex; align-items:center; justify-content:space-between; color:var(--muted); text-transform:uppercase; }
-.hud-value{ color:var(--accent-2); text-shadow:0 0 4px currentColor, 0 0 12px currentColor; }
-.hud-dot{
-  display:inline-block; width:0.4rem; height:0.4rem; border-radius:9999px; background:var(--warm);
-  box-shadow:0 0 6px var(--warm), 0 0 14px var(--warm);
-  flex-shrink:0; margin-right:0.5rem; animation:radar-blink 1.8s ease-in-out infinite;
 }
 
 .hero-gradient-base{
@@ -657,19 +639,22 @@ main{ position:relative; width:100%; overflow-x:hidden; }
 <div class="crt-overlay" aria-hidden="true"></div>
 
 <div id="preloader" aria-hidden="false">
-  <div class="boot-grid"></div>
-  <div class="boot-panel">
-    <div class="boot-log" id="boot-log"></div>
-    <div class="boot-bar"><span class="boot-bar-fill" id="boot-bar-fill"></span></div>
-    <div class="boot-label"><span>Kium.sys</span><span id="boot-status">Cargando</span></div>
+  <div class="boot-stage">
+    <div class="boot-glow"></div>
+    <div class="boot-logo">
+      <img src="assets/logo-k.png" alt="" class="boot-logo-mark" id="boot-logo-badge">
+    </div>
+    <div class="boot-meter">
+      <div class="boot-bar"><span class="boot-bar-fill" id="boot-bar-fill"></span></div>
+      <div class="boot-label"><span>Kium.sys</span><span id="boot-status">Cargando</span></div>
+    </div>
   </div>
 </div>
 
 <header id="nav">
   <nav class="nav-inner" aria-label="Principal">
     <a href="#top" class="logo">
-      <span class="logo-badge">K</span>
-      <span class="logo-text">Kium</span>
+      <img src="assets/logo-full.png" alt="Kium" class="logo-mark">
     </a>
     <ul class="nav-links">
       <li><a href="#story">Nosotros</a></li>
@@ -711,34 +696,6 @@ main{ position:relative; width:100%; overflow-x:hidden; }
     <div class="hero-art-wrap">
       <div class="hero-art">
         <div class="hero-art-glow"></div>
-        <div class="hero-hud hud-corners" id="hero-hud">
-          <div class="hero-hud-grid"></div>
-          <svg class="hero-radar" viewBox="0 0 200 200" aria-hidden="true">
-            <defs>
-              <linearGradient id="radarFadeHero" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" style="stop-color:var(--accent);stop-opacity:0.55" />
-                <stop offset="100%" style="stop-color:var(--accent);stop-opacity:0" />
-              </linearGradient>
-            </defs>
-            <circle class="radar-ring" cx="100" cy="100" r="38" />
-            <circle class="radar-ring dash" cx="100" cy="100" r="66" />
-            <circle class="radar-ring" cx="100" cy="100" r="94" />
-            <line class="radar-crosshair" x1="6" y1="100" x2="194" y2="100" />
-            <line class="radar-crosshair" x1="100" y1="6" x2="100" y2="194" />
-            <g class="radar-sweep">
-              <path d="M100,100 L100,6 A94,94 0 0,1 166,34 Z" />
-            </g>
-            <circle class="radar-blip" cx="146" cy="66" r="3.5" />
-            <circle class="radar-blip radar-blip-2" cx="58" cy="138" r="3" />
-            <circle class="radar-blip radar-blip-3" cx="132" cy="150" r="2.5" />
-          </svg>
-          <div class="hero-hud-readout">
-            <div class="hud-line"><span><span class="hud-dot"></span>Sistema</span><span class="hud-value">Online</span></div>
-            <div class="hud-line"><span>Servidores</span><span class="hud-value">150+</span></div>
-            <div class="hud-line"><span>Latencia</span><span class="hud-value">&lt;20ms</span></div>
-            <div class="hud-line"><span>Uptime</span><span class="hud-value">99.9%</span></div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -1004,15 +961,7 @@ main{ position:relative; width:100%; overflow-x:hidden; }
 { "imports": { "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.3.19/dist/lenis.mjs" } }
 </script>
 <script type="module">
-(async () => {
-
-let Lenis = null;
-try {
-  const mod = await import("lenis");
-  Lenis = mod.default;
-} catch (e) {
-  Lenis = null; // CDN unreachable — degrade to native smooth scroll below
-}
+(() => {
 
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1028,20 +977,35 @@ function applyAdaptiveGrid(){
 applyAdaptiveGrid();
 addEventListener("resize", applyAdaptiveGrid);
 
-/* ---------- Lenis (falls back to native smooth scroll if the CDN import failed) ---------- */
-let lenis;
-if (Lenis) {
-  lenis = new Lenis({ smoothWheel: true });
-  function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
-  requestAnimationFrame(raf);
-} else {
-  lenis = {
-    scrollTo: (el) => el.scrollIntoView({ behavior: "smooth" }),
-    stop: () => {},
-    start: () => {},
-  };
-}
+/* ---------- Lenis (native smooth scroll immediately; upgrades in place if the
+   CDN module shows up — the rest of the page must never wait on that network
+   fetch, or a slow/blocked CDN would stall everything behind it, preloader included) ---------- */
+let lenis = {
+  scrollTo: (el) => el.scrollIntoView({ behavior: "smooth" }),
+  stop: () => {},
+  start: () => {},
+};
 window.lenis = lenis;
+import("lenis").then((mod) => {
+  const real = new mod.default({ smoothWheel: true });
+  function raf(t){ real.raf(t); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+  lenis = real;
+  window.lenis = lenis;
+}).catch(() => { /* CDN unreachable — keep native smooth scroll fallback */ });
+
+/* Runs before any other feature init below: an error further down in this
+   script must never leave the preloader stuck on screen forever. */
+try {
+  initPreloader();
+} catch (e) {
+  console.error("[KIUM-DEBUG] initPreloader threw:", e);
+  const pre = document.getElementById("preloader");
+  if (pre) { pre.style.display = "none"; pre.setAttribute("aria-hidden", "true"); }
+  document.body.style.overflow = "";
+  lenis.start();
+  startHeroReveal(0);
+}
 
 document.querySelectorAll('a[href^="#"]').forEach((a) => {
   a.addEventListener("click", (e) => {
@@ -1177,7 +1141,6 @@ function initTilt(selector, maxDeg){
 }
 initTilt(".plan-art", 7);
 initTilt(".voice-portrait-wrap", 6);
-initTilt("#hero-hud", 8);
 
 /* ---------- voices interactivity ---------- */
 function initVoices(){
@@ -1239,16 +1202,10 @@ function startHeroReveal(base){
 
 function initPreloader(){
   const pre = document.getElementById("preloader");
-  const logEl = document.getElementById("boot-log");
   const barFill = document.getElementById("boot-bar-fill");
   const statusEl = document.getElementById("boot-status");
-  const BOOT_LINES = [
-    "iniciando kium.sys",
-    "verificando nucleo de red",
-    "cargando servidores cobblemon",
-    "estableciendo conexion segura",
-    "sistema listo",
-  ];
+  const bootBadge = document.getElementById("boot-logo-badge");
+  const navMark = document.querySelector(".logo-mark");
 
   if (REDUCED) {
     pre.style.display = "none";
@@ -1259,60 +1216,67 @@ function initPreloader(){
 
   window.scrollTo(0, 0);
   lenis.stop();
+  const prevOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
 
-  let lineIndex = 0;
-  function typeLine(){
-    const text = BOOT_LINES[lineIndex];
-    const last = lineIndex === BOOT_LINES.length - 1;
-    const lineEl = document.createElement("div");
-    lineEl.className = "boot-line";
-    const prompt = document.createElement("span");
-    prompt.className = "boot-prompt";
-    prompt.textContent = ">";
-    const textSpan = document.createElement("span");
-    const cursor = document.createElement("span");
-    cursor.className = "boot-cursor";
-    lineEl.append(prompt, textSpan, cursor);
-    logEl.appendChild(lineEl);
+  const POWER_ON_MS = 1400;
+  const HOLD_MS = 180;
+  const FLIGHT_MS = 850;
 
-    let i = 0;
-    const typer = setInterval(() => {
-      i++;
-      textSpan.textContent = " " + text.slice(0, i);
-      if (i >= text.length) {
-        clearInterval(typer);
-        cursor.remove();
-        if (!last) {
-          const ok = document.createElement("span");
-          ok.className = "boot-ok";
-          ok.textContent = "OK";
-          lineEl.appendChild(ok);
-        }
-        barFill.style.width = (((lineIndex + 1) / BOOT_LINES.length) * 100) + "%";
-        lineIndex++;
-        if (lineIndex < BOOT_LINES.length) {
-          setTimeout(typeLine, 130);
-        } else {
-          statusEl.textContent = "Listo";
-          setTimeout(finish, 550);
-        }
-      }
-    }, 16);
+  if (barFill) {
+    barFill.style.transition = `width ${POWER_ON_MS + HOLD_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+    requestAnimationFrame(() => { barFill.style.width = "100%"; });
   }
-  setTimeout(typeLine, 300);
+  setTimeout(() => { if (statusEl) statusEl.textContent = "Listo"; }, POWER_ON_MS + 80);
 
+  let done = false;
   function finish(){
-    pre.classList.add("wipe");
+    if (done) return;
+    done = true;
+    try {
+      if (navMark && bootBadge) {
+        // Freeze the badge's current animated opacity/filter as plain inline
+        // styles BEFORE touching anything else. Handing a property straight
+        // from a CSS `animation` to a `transition` in the same style pass is
+        // ambiguous — Chrome can snap it straight to the transition's target
+        // instead of respecting its delay/duration. Freezing first gives the
+        // transition an explicit, unambiguous starting point.
+        const cs = getComputedStyle(bootBadge);
+        bootBadge.style.transition = "none";
+        bootBadge.style.opacity = cs.opacity;
+        bootBadge.style.filter = cs.filter;
+        bootBadge.style.transform = "none";
+        void bootBadge.offsetWidth; // force a style flush before changing the target
+
+        const from = bootBadge.getBoundingClientRect();
+        const to = navMark.getBoundingClientRect();
+        const flipX = (to.left + to.width / 2) - (from.left + from.width / 2);
+        const flipY = (to.top + to.height / 2) - (from.top + from.height / 2);
+        // Scale by height, not width: the boot mark is just the K glyph while
+        // the nav mark is the full "KIUM HOSTING" lockup, so widths aren't
+        // comparable — matching height lands the K at the nav logo's scale
+        // right as it fades into the real lockup underneath.
+        const flipScale = to.height / from.height;
+
+        bootBadge.style.transition = "transform 0.85s cubic-bezier(0.65,0,0.35,1), opacity 0.3s ease-in 0.55s";
+        bootBadge.style.transform = `translate(${flipX}px, ${flipY}px) scale(${flipScale})`;
+        bootBadge.style.opacity = "0";
+      }
+    } catch (e) { /* still finish even if the flip math fails */ }
+    pre.classList.add("finishing");
     setTimeout(() => {
-      pre.style.pointerEvents = "none";
+      pre.style.display = "none";
       pre.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = prevOverflow;
       lenis.start();
-    }, 700);
+    }, FLIGHT_MS + 60);
   }
 
-  startHeroReveal(3100);
+  setTimeout(finish, POWER_ON_MS + HOLD_MS);
+  setTimeout(finish, POWER_ON_MS + HOLD_MS + 3000); // hard safety net
+
+  startHeroReveal(POWER_ON_MS + HOLD_MS - 150);
 }
-initPreloader();
 
 })();
 </script>
