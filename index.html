@@ -15,9 +15,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Kium — Hosting para servidores Cobblemon</title>
 <meta name="description" content="Kium ofrece hosting premium para servidores de Minecraft con Cobblemon: hardware dedicado, cero lag y soporte real 24/7." />
+<link rel="icon" type="image/png" href="assets/logo-k.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Martian+Mono:wght@400;500;600&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ---------- RESET ---------- */
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -29,25 +30,23 @@ svg{display:block;}
 
 /* ---------- TOKENS ---------- */
 :root{
-  --background:#080b0d;
+  --background:#050809;
   --foreground:#f2f0e6;
-  --surface:#111519;
-  --surface-2:#161c21;
-  --muted:#7c8790;
-  --line:rgba(242,240,230,0.1);
-  --line-strong:rgba(242,240,230,0.22);
-  --accent:#2f8fb8;
-  --accent-2:#5cb6d9;
-  --accent-deep:#123a4a;
-  --warm:#e7b75c;
+  --surface:#0b1319;
+  --surface-2:#101c24;
+  --muted:#8fa4ae;
+  --line:rgba(150,200,230,0.2);
+  --line-strong:rgba(150,200,230,0.4);
+  --accent:#3d94ff;
+  --accent-2:#8ccbff;
 
-  --font-display:"Anton", sans-serif;
+  --font-display:"Chakra Petch", sans-serif;
   --font-sans:"Onest", sans-serif;
+  --font-mono:"Martian Mono", ui-monospace, monospace;
 
   --gutter:2.5rem;
   --section:9rem;
 
-  --fs-mega:4.25rem;
   --fs-display:6.5rem;
   --fs-h1:4.25rem;
   --fs-h2:3rem;
@@ -61,7 +60,7 @@ svg{display:block;}
 }
 
 /* ---------- ADAPTIVE REM GRID ---------- */
-html{ font-size:16px; background:var(--background); }
+html{ font-size:16px; background:var(--background); scrollbar-gutter:stable; }
 @media (max-width:1920px){ html{ font-size:0.833333vw; } }
 @media (max-width:1440px){ html{ font-size:1.111111vw; } }
 @media (max-width:1024px){ html{ font-size:1.5625vw; } }
@@ -77,63 +76,166 @@ body{
 }
 ::selection{ background:var(--accent); color:var(--background); }
 
+/* ---------- DEVICE SCREEN TEXTURE ---------- */
+/* A fixed dot-matrix (the scanner's own display material), not a broadcast
+   signal — no flicker, no scanline sweep. Reads as a screen you're looking
+   into, not a TV you're watching. */
+.screen-texture{
+  position:fixed; inset:0; z-index:95; pointer-events:none;
+  background:
+    radial-gradient(rgba(160,210,235,0.05) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% 45%, transparent 60%, rgba(0,0,0,0.14) 88%, rgba(0,0,0,0.3) 100%);
+  background-size:3px 3px, 100% 100%;
+  opacity:0.85;
+}
+
 /* ---------- UTILITIES ---------- */
-.eyebrow{
-  display:flex;align-items:center;gap:0.75rem;
-  font-size:var(--fs-eyebrow);line-height:1.2;font-weight:500;
-  text-transform:uppercase;letter-spacing:0.22em;color:var(--muted);
+.line-mask{
+  overflow:hidden; display:block;
+  padding:0.28em 0.3em; margin:-0.28em -0.3em;
 }
-.eyebrow::before{
-  content:"";width:0.5rem;height:0.5rem;border-radius:9999px;background:var(--accent);flex-shrink:0;
-}
-.line-mask{ overflow:hidden; display:block; }
 .line-inner{
-  display:block; transform:translateY(110%); opacity:0;
+  display:block; transform-origin:50% 100%;
+  transform:perspective(700px) translateY(110%) rotateX(-50deg); opacity:0;
   transition:transform 0.85s cubic-bezier(0.16,1,0.3,1), opacity 0.85s cubic-bezier(0.16,1,0.3,1);
 }
 .heading-lines.is-in .line-inner,
-.line-mask.is-in .line-inner{ transform:translateY(0); opacity:1; }
+.line-mask.is-in .line-inner{ transform:perspective(700px) translateY(0) rotateX(0deg); opacity:1; }
 
-[data-reveal].fade-up{
-  opacity:0; transform:translateY(28px);
-  transition:opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+/* Directional scroll reveal — content declares which side it enters from
+   (data-reveal="left|right|up") so the page has real rhythm as you scroll,
+   not one identical fade on every section. heading-lines elements are
+   excluded: their own line-mask/line-inner children already carry the
+   reveal motion, so the wrapper itself stays untransformed. */
+[data-reveal]:not(.heading-lines){
+  opacity:0;
+  transition:opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
 }
-[data-reveal].fade-up.is-in{ opacity:1; transform:none; }
+[data-reveal="up"]:not(.heading-lines){ transform:perspective(1000px) translateY(28px) rotateX(7deg); }
+[data-reveal="left"]:not(.heading-lines){ transform:translateX(-3rem); }
+[data-reveal="right"]:not(.heading-lines){ transform:translateX(3rem); }
+[data-reveal].is-in:not(.heading-lines){ opacity:1; transform:none; }
+
+/* ---------- DEVICE BEZEL FRAME ---------- */
+/* Fixed corner brackets at the viewport edge: the signature cue that this is
+   a handheld scanner's screen, not a page being watched. Present once, at
+   the outermost frame, so it never competes with the per-panel hud-corners
+   below. */
+#device-frame{
+  position:fixed; inset:0; z-index:96; pointer-events:none;
+}
+.device-corner{
+  position:absolute; width:1.1rem; height:1.1rem;
+  border:1.5px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  filter:drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 45%, transparent));
+}
+.device-corner.tl{ top:0.9rem; left:0.9rem; border-right:0; border-bottom:0; }
+.device-corner.tr{ top:0.9rem; right:0.9rem; border-left:0; border-bottom:0; }
+.device-corner.bl{ bottom:0.9rem; left:0.9rem; border-right:0; border-top:0; }
+.device-corner.br{ bottom:0.9rem; right:0.9rem; border-left:0; border-top:0; }
+
+/* HUD-style corner brackets — reusable on any panel/card */
+.hud-corners{ position:relative; }
+.hud-corners::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  --hc: var(--hud-corner-color, var(--accent));
+  background-image:
+    linear-gradient(var(--hc), var(--hc)), linear-gradient(var(--hc), var(--hc)),
+    linear-gradient(var(--hc), var(--hc)), linear-gradient(var(--hc), var(--hc)),
+    linear-gradient(var(--hc), var(--hc)), linear-gradient(var(--hc), var(--hc)),
+    linear-gradient(var(--hc), var(--hc)), linear-gradient(var(--hc), var(--hc));
+  background-repeat:no-repeat;
+  background-size:14px 1px, 1px 14px, 14px 1px, 1px 14px, 14px 1px, 1px 14px, 14px 1px, 1px 14px;
+  background-position:top left, top left, top right, top right, bottom left, bottom left, bottom right, bottom right;
+  opacity:0.9;
+  filter:drop-shadow(0 0 3px var(--hc)) drop-shadow(0 0 8px var(--hc));
+}
 
 @media (prefers-reduced-motion: reduce){
   #preloader{ display:none !important; }
   .marquee-track{ animation:none !important; }
-  [data-reveal], .line-inner, .letter, .word, .voice-portrait-item{
+  .boot-cursor{ animation:none !important; }
+  [data-reveal], .line-inner, .word, .voice-portrait-item, .hero-desc, .hero-point, .hero-cta{
     transition:none !important; opacity:1 !important; transform:none !important;
   }
+  .logo-mark{
+    animation:none !important;
+    opacity:1 !important;
+  }
+  .orbit-label{ animation:none !important; opacity:1 !important; transform:translate(-50%,-50%) !important; }
+  .orbit-label--a{ left:50%; top:20%; z-index:-1 !important; }
+  .orbit-label--b{ left:94%; top:50%; z-index:0 !important; }
+  .orbit-label--c{ left:50%; top:80%; z-index:1 !important; }
+  .orbit-label--d{ left:6%;  top:50%; z-index:0 !important; }
 }
 
-/* ---------- PRELOADER ---------- */
+/* ---------- PRELOADER: logo power-on sequence ---------- */
 #preloader{
   position:fixed; inset:0; z-index:100;
-  display:flex; padding:var(--gutter);
-  flex-direction:column; align-items:flex-start; justify-content:flex-end; gap:0.75rem;
-  transition:transform 0.65s cubic-bezier(0.22,1,0.36,1);
+  display:flex; align-items:center; justify-content:center; padding:var(--gutter);
 }
 #preloader::before{
   content:""; position:absolute; inset:0; z-index:-1; background:var(--background);
 }
-@media (min-width:640px){
-  #preloader{ flex-direction:row; align-items:flex-end; justify-content:space-between; gap:1rem; }
+#preloader.finishing{ pointer-events:none; }
+#preloader.finishing::before{ transition:opacity 0.6s ease-out 0.1s; opacity:0; }
+
+.boot-stage{ position:relative; display:flex; flex-direction:column; align-items:center; gap:2.25rem; }
+.boot-glow{
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:24rem; height:24rem; border-radius:50%; pointer-events:none;
+  background:radial-gradient(closest-side, color-mix(in srgb, var(--accent) 35%, transparent), transparent 70%);
+  filter:blur(2rem);
+  opacity:0; animation:boot-glow-in 1.4s ease-out 0.15s 1 both;
 }
-#preloader.fade-out .preloader-brand, #preloader.fade-out .preloader-count{
-  opacity:0; transition:opacity 0.3s ease-out;
+@keyframes boot-glow-in{ 0%{ opacity:0; } 55%{ opacity:0.22; } 100%{ opacity:0.55; } }
+#preloader.finishing .boot-glow{ animation:none; transition:opacity 0.3s ease-out; opacity:0; }
+
+.boot-logo{ position:relative; display:flex; align-items:center; }
+.boot-logo-mark{
+  display:block; width:min(13rem, 44vw); height:auto;
+  animation:boot-power-on 1.4s linear 0.15s 1 both;
 }
-#preloader.wipe{ transform:translateY(-100%); }
-.preloader-brand{
-  font-family:var(--font-display); font-size:var(--fs-h3); text-transform:uppercase;
-  line-height:1; letter-spacing:-0.01em; color:var(--foreground);
+@keyframes boot-power-on{
+  0%   { opacity:0.12; filter:grayscale(1) brightness(0.3); }
+  8%   { opacity:0.55; filter:grayscale(0.7) brightness(0.6); }
+  14%  { opacity:0.15; filter:grayscale(1) brightness(0.3); }
+  22%  { opacity:0.7;  filter:grayscale(0.4) brightness(0.8); }
+  30%  { opacity:0.25; filter:grayscale(0.9) brightness(0.4); }
+  45%  { opacity:0.85; filter:grayscale(0.1) brightness(0.95); }
+  60%  { opacity:1;    filter:grayscale(0) brightness(1); }
+  100% { opacity:1;    filter:grayscale(0) brightness(1); }
 }
-.preloader-count{
-  font-family:var(--font-display); font-size:var(--fs-display); line-height:1;
-  font-variant-numeric:tabular-nums; color:var(--foreground);
+/* The flight (transform/opacity/filter) is driven entirely by inline styles
+   set in finish() — handing a property straight from this CSS animation to a
+   CSS transition on the same property is an ambiguous, browser-inconsistent
+   handoff. This just stops the animation as a fallback if that JS ever fails. */
+#preloader.finishing .boot-logo-mark{ animation:none; }
+.boot-meter{
+  width:min(15rem, 60vw); opacity:0; animation:boot-meter-in 0.4s ease-out 0.75s 1 both;
 }
-.preloader-count .pct{ color:var(--accent); }
+@keyframes boot-meter-in{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+#preloader.finishing .boot-meter{
+  animation:none;
+  transition:opacity 0.28s ease-out, transform 0.28s ease-out;
+  opacity:0; transform:translateY(6px);
+}
+.boot-bar{ height:0.4rem; width:100%; background:var(--line); position:relative; overflow:hidden; }
+.boot-bar-fill{
+  display:block; height:100%; width:0%;
+  background:repeating-linear-gradient(90deg, var(--accent) 0 6px, transparent 6px 9px);
+  box-shadow:0 0 10px var(--accent);
+}
+.boot-label{
+  margin-top:0.6rem; display:flex; justify-content:space-between; font-family:var(--font-mono);
+  font-size:0.6875rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted);
+}
+.boot-cursor{
+  display:inline-block; width:0.55em; height:1em; margin-left:0.25em; vertical-align:-0.15em;
+  background:var(--accent); box-shadow:0 0 4px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent);
+  animation:boot-cursor-blink 1s steps(1) infinite;
+}
+@keyframes boot-cursor-blink{ 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
 
 /* ---------- NAV ---------- */
 #nav{
@@ -143,29 +245,53 @@ body{
   pointer-events:auto; display:flex; align-items:center; justify-content:space-between;
   padding:1.5rem var(--gutter);
 }
-.logo{ display:flex; align-items:center; gap:0.75rem; }
-.logo-badge{
-  display:grid; place-items:center; width:2.5rem; height:2.5rem; border-radius:9999px;
-  border:1px solid var(--line-strong); font-weight:600; letter-spacing:-0.01em; font-size:1rem;
+.logo{ display:flex; align-items:center; }
+.logo-mark{
+  display:block; height:6.25rem; width:auto; max-width:40vw;
+  filter:brightness(1.15) drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 65%, transparent)) drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 35%, transparent));
+  /* Fallback only: the boot script normally cancels this and drives the
+     fade-in itself via inline style, timed to the exact instant the boot K
+     finishes its flight (see finish() below) — a fixed CSS delay drifts
+     against that JS timeline by however long the page took to parse before
+     the boot script ran, which reads as the K vanishing into a gap before
+     the wordmark appears. This copy only fires if the boot script errors out
+     or races, so the logo still resolves to visible on its own eventually
+     instead of staying stuck invisible forever. */
+  opacity:0;
+  animation:logo-fade-in 0.3s ease-out 2.6s 1 both;
 }
-.logo-text{
-  font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase; letter-spacing:0.22em;
-  color:var(--muted); display:none;
-}
-@media (min-width:640px){ .logo-text{ display:block; } }
+@keyframes logo-fade-in{ to{ opacity:1; } }
 
 .nav-links{ display:none; align-items:center; gap:2.5rem; }
 @media (min-width:768px){ .nav-links{ display:flex; } }
 .nav-links a{
-  position:relative; font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase;
-  letter-spacing:0.18em; color:var(--muted); transition:color 0.3s ease-out;
+  position:relative; font-family:var(--font-mono); font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase;
+  letter-spacing:0.18em; color:var(--accent-2);
+  text-shadow:0 0 3px currentColor, 0 0 9px color-mix(in srgb, currentColor 40%, transparent);
+  transition:color 0.3s ease-out, text-shadow 0.3s ease-out;
 }
 .nav-links a::after{
   content:""; position:absolute; left:0; bottom:-0.25rem; height:1px; width:0;
-  background:var(--accent); transition:width 0.3s ease-out;
+  background:var(--accent); box-shadow:0 0 4px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent); transition:width 0.3s ease-out;
 }
-.nav-links a:hover{ color:var(--foreground); }
+.nav-links a:hover{ color:#fff; text-shadow:0 0 4px var(--accent-2), 0 0 14px color-mix(in srgb, var(--accent-2) 45%, transparent); }
 .nav-links a:hover::after{ width:100%; }
+.nav-status{
+  display:flex; align-items:center; gap:0.5rem;
+  font-family:var(--font-mono); font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase;
+  letter-spacing:0.18em; color:var(--muted);
+  padding-right:1.5rem; border-right:1px solid var(--line);
+}
+.nav-status-dot{
+  width:0.4rem; height:0.4rem; border-radius:9999px; background:var(--accent); flex-shrink:0;
+  box-shadow:0 0 4px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+/* Bare dot, no label/divider: the mobile stand-in for .nav-status, since the
+   labelled version lives inside .nav-links and is hidden with it behind the
+   burger below 768px — without this the "device is alive" cue disappears
+   from the whole first viewport on phones. */
+.nav-status--compact{ padding-right:0; border-right:0; margin-right:0.75rem; }
+@media (min-width:768px){ .nav-status--compact{ display:none; } }
 
 .burger{
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -222,7 +348,7 @@ body{
   background:linear-gradient(120deg, transparent 30%, color-mix(in srgb, var(--accent) 35%, transparent) 50%, transparent 70%);
 }
 .liquid-glow.warm{
-  background:linear-gradient(120deg, transparent 30%, color-mix(in srgb, var(--warm) 35%, transparent) 50%, transparent 70%);
+  background:linear-gradient(120deg, transparent 30%, color-mix(in srgb, var(--accent) 35%, transparent) 50%, transparent 70%);
 }
 .liquid:hover .liquid-veil{ opacity:0; }
 .liquid:hover .liquid-glow{ opacity:1; }
@@ -234,89 +360,232 @@ body{
   position:relative; display:flex; flex-direction:column; min-height:100svh; overflow:hidden;
 }
 .hero-toprow{
-  position:relative; z-index:30; display:flex; flex-direction:column; gap:2rem;
+  position:relative; z-index:30;
   padding:7rem var(--gutter) 0;
 }
+.hero-pitch{ display:flex; flex-direction:column; gap:2rem; }
 @media (min-width:640px){
-  .hero-toprow{ flex-direction:row; align-items:flex-start; justify-content:space-between; gap:1rem; }
+  .hero-pitch{ flex-direction:row; align-items:flex-start; justify-content:space-between; gap:1rem; }
+}
+@media (min-width:1024px){
+  .hero-pitch{ flex-direction:column; align-items:flex-start; max-width:28rem; gap:1.75rem; }
 }
 .hero-roles{
-  font-family:var(--font-display); text-transform:uppercase; line-height:1.05; letter-spacing:-0.01em;
-  color:var(--foreground); font-size:var(--fs-h3); text-shadow:0 4px 24px rgba(0,0,0,0.5);
+  font-family:var(--font-display); text-transform:uppercase; line-height:1.15; letter-spacing:-0.01em;
+  color:var(--foreground); font-size:var(--fs-h3); max-width:22ch;
+  text-shadow:0 2px 8px rgba(0,0,0,0.55), 0 0 5px rgba(242,240,230,0.5), 0 0 14px rgba(242,240,230,0.2);
 }
-@media (min-width:640px){ .hero-roles{ font-size:var(--fs-h2); } }
+@media (min-width:640px){ .hero-roles{ font-size:1.75rem; max-width:26ch; } }
+/* The orbit version takes over once there's room to actually circle the
+   hologram (below that width, an orbit collides with the viewport edge or
+   the hologram itself); .hero-roles stays the compact 1-2 line fallback. */
+@media (min-width:1024px){ .hero-roles{ display:none; } }
 .hero-desc{
   max-width:26rem; font-size:var(--fs-body); color:var(--muted); text-shadow:0 2px 16px rgba(0,0,0,0.6);
   opacity:0; transform:translateY(16px);
   transition:opacity 0.55s cubic-bezier(0.16,1,0.3,1), transform 0.55s cubic-bezier(0.16,1,0.3,1);
 }
 @media (min-width:640px){ .hero-desc{ text-align:right; } }
+@media (min-width:1024px){
+  .hero-desc{
+    text-align:left; max-width:27rem; font-size:1.375rem; line-height:1.35; color:var(--foreground);
+  }
+}
 .hero-desc.is-in{ opacity:1; transform:none; }
+.hero-desc-spark{
+  color:var(--accent-2); font-weight:600;
+  text-shadow:0 0 10px color-mix(in srgb, var(--accent-2) 60%, transparent), 0 2px 16px rgba(0,0,0,0.6);
+}
+
+.hero-points{
+  display:none; flex-direction:column; gap:0.85rem;
+  font-family:var(--font-mono); font-size:var(--fs-eyebrow); letter-spacing:0.02em; color:var(--muted);
+}
+@media (min-width:1024px){ .hero-points{ display:flex; font-size:0.9rem; gap:1rem; } }
+.hero-point{
+  display:flex; align-items:flex-start; gap:0.65rem;
+  opacity:0; transform:translateX(-18px);
+  transition:opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.hero-point.is-in{ opacity:1; transform:none; }
+.hero-point-mark{
+  flex-shrink:0; margin-top:0.4em; width:0.4rem; height:0.4rem; border-radius:9999px; background:var(--accent);
+  box-shadow:0 0 4px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+.hero-cta{
+  display:flex; flex-wrap:wrap; gap:0.85rem; margin-top:0.5rem;
+  opacity:0; transform:translateY(16px);
+  transition:opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.hero-cta.is-in{ opacity:1; transform:none; }
+.hero-cta-btn{
+  display:inline-flex; align-items:center; gap:0.55rem; white-space:nowrap;
+  font-family:var(--font-mono); font-size:var(--fs-eyebrow); font-weight:600; text-transform:uppercase; letter-spacing:0.08em;
+  padding:0.95rem 1.6rem; border-radius:2px;
+  transition:transform 0.25s ease-out, box-shadow 0.25s ease-out, border-color 0.25s ease-out, background 0.25s ease-out, color 0.25s ease-out;
+}
+.hero-cta-btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.hero-cta-btn.is-primary{
+  color:var(--background); background:var(--accent);
+  box-shadow:0 0 16px color-mix(in srgb, var(--accent) 55%, transparent), 0 6px 20px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.hero-cta-btn.is-primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 0 22px color-mix(in srgb, var(--accent) 70%, transparent), 0 8px 26px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.hero-cta-btn.is-secondary{
+  color:var(--foreground); background:color-mix(in srgb, var(--surface) 55%, transparent);
+  border:1px solid var(--line);
+}
+.hero-cta-btn.is-secondary:hover{
+  transform:translateY(-2px);
+  border-color:color-mix(in srgb, var(--accent) 50%, var(--line));
+  background:color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+.hero-cta-btn-arrow{ transition:transform 0.25s ease-out; }
+.hero-cta-btn:hover .hero-cta-btn-arrow{ transform:translateX(3px); }
 
 .hero-art-wrap{
   position:absolute; z-index:20; pointer-events:none; bottom:0; left:50%;
-  transform:translateX(-50%); height:86vh; width:80vw;
+  transform:translateX(-50%); height:88vh; width:92vw;
 }
-@media (min-width:640px){ .hero-art-wrap{ width:48vw; } }
-@media (min-width:1024px){ .hero-art-wrap{ width:36vw; } }
+@media (min-width:640px){ .hero-art-wrap{ width:78vw; } }
+@media (min-width:1024px){
+  .hero-art-wrap{ left:auto; right:0; transform:none; width:50vw; }
+}
 .hero-art{
   position:absolute; inset:0; pointer-events:auto;
-  border-radius:44% 56% 52% 48% / 54% 46% 58% 42%;
-  overflow:hidden;
+  display:flex; align-items:flex-end; justify-content:center; padding-bottom:8vh;
 }
-/* the gradient artwork lives on .liquid-content (the filtered element)
-   so the SVG displacement filter actually distorts visible pixels */
-.hero-art .liquid-content{
-  background:
-    radial-gradient(120% 90% at 25% 10%, color-mix(in srgb, var(--warm) 55%, transparent), transparent 55%),
-    linear-gradient(200deg, var(--accent-2) 0%, var(--accent) 38%, var(--accent-deep) 75%, #06121a 100%);
-}
-.hero-art .liquid-content::after{
-  content:"";
-  position:absolute; inset:0;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 42px),
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 1px, transparent 1px 42px);
-  mix-blend-mode:overlay; opacity:0.6;
+.hero-art-glow{
+  position:absolute; inset:0; border-radius:50%;
+  background:radial-gradient(60% 55% at 50% 45%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%);
+  filter:blur(2.5rem);
+  opacity:0.5;
 }
 
+/* ---------- HERO HOLOGRAM (WebGL) ---------- */
+/* Real 3D geometry rendered by three.js (self-hosted, no CDN), not a CSS
+   approximation — genuine lighting and depth, tilts toward the cursor.
+   Deliberately generic sci-fi holography, not a stand-in for any
+   real-world or trademarked object. */
+.hologram{
+  position:relative; width:min(92%, 30rem); aspect-ratio:1;
+}
+@media (min-width:640px){ .hologram{ width:min(90%, 40rem); } }
+@media (min-width:1024px){ .hologram{ width:min(92%, 46rem); } }
+.hologram-canvas{ display:block; width:100%; height:100%; }
+.hologram-base{
+  position:absolute; left:50%; bottom:-2%; width:58%; height:0.85rem; transform:translateX(-50%);
+  background:radial-gradient(closest-side, color-mix(in srgb, var(--accent) 55%, transparent), transparent 75%);
+  filter:blur(6px);
+}
+
+/* ---------- RACK SELECTOR (preview the rack at each plan's scale) ---------- */
+.rack-selector{
+  position:absolute; z-index:25; pointer-events:auto; left:50%; bottom:14%;
+  transform:translateX(-50%);
+  display:flex; justify-content:center; gap:0.5rem;
+  font-family:var(--font-mono); text-transform:uppercase; letter-spacing:0.05em;
+}
+@media (min-width:1024px){
+  .rack-selector{
+    left:auto; bottom:auto; top:50%; right:0.5rem; transform:translateY(-50%);
+    flex-direction:column; gap:0.75rem;
+  }
+}
+.rack-selector-btn{
+  font:inherit; letter-spacing:inherit; text-transform:inherit; cursor:pointer; white-space:nowrap;
+  padding:0.6rem 0.7rem; font-size:0.65rem; color:var(--muted); min-height:2rem;
+  background:color-mix(in srgb, var(--surface) 70%, transparent);
+  border:1px solid var(--line); border-radius:2px;
+  transition:color 0.25s ease-out, border-color 0.25s ease-out, background 0.25s ease-out;
+}
+@media (min-width:1024px){ .rack-selector-btn{ padding:0.5rem 0.85rem; font-size:var(--fs-eyebrow); } }
+.rack-selector-btn:hover{ color:var(--foreground); border-color:color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.rack-selector-btn:focus-visible{ outline:1.5px solid var(--accent); outline-offset:2px; }
+.rack-selector-btn.is-active{
+  color:var(--foreground); border-color:var(--accent);
+  background:color-mix(in srgb, var(--accent) 14%, var(--surface));
+  box-shadow:0 0 10px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* ---------- HERO ORBIT LABELS (desktop only — see .hero-roles for the
+   compact 1-2 line fallback below 1024px) ---------- */
+/* Nested directly inside .hologram (not a sibling) so the labels and the
+   canvas share one stacking context: a label's z-index can then actually
+   win or lose against the canvas, which is what lets it swing behind the
+   sphere for half of each orbit instead of always sitting on top. */
+.hero-orbit{ display:none; position:absolute; inset:0; pointer-events:none; }
+@media (min-width:1024px){ .hero-orbit{ display:block; } }
+.orbit-label{
+  position:absolute; top:50%; left:50%; display:block; white-space:nowrap;
+  font-family:var(--font-display); text-transform:uppercase; line-height:1;
+  letter-spacing:-0.01em; color:var(--foreground); font-size:var(--fs-lead);
+  text-shadow:0 2px 8px rgba(0,0,0,0.55), 0 0 5px rgba(242,240,230,0.5), 0 0 14px rgba(242,240,230,0.2);
+  animation:hero-orbit-path 26s linear infinite;
+}
+/* Each label rides the same elliptical path, staggered a quarter-loop apart
+   (negative delay = starts already partway round) so they stay spaced
+   around the ring instead of bunching up. */
+.orbit-label--a{ animation-delay:0s; }
+.orbit-label--b{ animation-delay:-6.5s; }
+.orbit-label--c{ animation-delay:-13s; }
+.orbit-label--d{ animation-delay:-19.5s; }
+/* A flattened ellipse (viewed edge-on, like the WebGL point ring) —
+   z-index goes negative for the top half so .hologram-canvas (an ordinary
+   in-flow block, always painted above negative-z-index siblings but below
+   positive ones) occludes the label there, and positive for the bottom
+   half so it reads as passing in front. Scale/opacity dim the far side for
+   the same depth cue. */
+@keyframes hero-orbit-path{
+  0%      { left:50%;    top:20%;    transform:translate(-50%,-50%) scale(0.82);  opacity:0.45;  z-index:-1; }
+  4.167%  { left:61.39%; top:21.02%; transform:translate(-50%,-50%) scale(0.824); opacity:0.459; z-index:-1; }
+  8.333%  { left:72%;    top:24.02%; transform:translate(-50%,-50%) scale(0.837); opacity:0.487; z-index:-1; }
+  12.5%   { left:81.11%; top:28.79%; transform:translate(-50%,-50%) scale(0.858); opacity:0.531; z-index:-1; }
+  16.667% { left:88.11%; top:35%;    transform:translate(-50%,-50%) scale(0.885); opacity:0.587; z-index:-1; }
+  20.833% { left:92.5%;  top:42.24%; transform:translate(-50%,-50%) scale(0.916); opacity:0.654; z-index:-1; }
+  25%     { left:94%;    top:50%;    transform:translate(-50%,-50%) scale(0.95);  opacity:0.725; z-index:0; }
+  29.167% { left:92.5%;  top:57.76%; transform:translate(-50%,-50%) scale(0.984); opacity:0.796; z-index:1; }
+  33.333% { left:88.11%; top:65%;    transform:translate(-50%,-50%) scale(1.015); opacity:0.862; z-index:1; }
+  37.5%   { left:81.11%; top:71.21%; transform:translate(-50%,-50%) scale(1.042); opacity:0.919; z-index:1; }
+  41.667% { left:72%;    top:75.98%; transform:translate(-50%,-50%) scale(1.063); opacity:0.963; z-index:1; }
+  45.833% { left:61.39%; top:78.98%; transform:translate(-50%,-50%) scale(1.076); opacity:0.991; z-index:1; }
+  50%     { left:50%;    top:80%;    transform:translate(-50%,-50%) scale(1.08);  opacity:1;     z-index:1; }
+  54.167% { left:38.61%; top:78.98%; transform:translate(-50%,-50%) scale(1.076); opacity:0.991; z-index:1; }
+  58.333% { left:28%;    top:75.98%; transform:translate(-50%,-50%) scale(1.063); opacity:0.963; z-index:1; }
+  62.5%   { left:18.89%; top:71.21%; transform:translate(-50%,-50%) scale(1.042); opacity:0.919; z-index:1; }
+  66.667% { left:11.89%; top:65%;    transform:translate(-50%,-50%) scale(1.015); opacity:0.863; z-index:1; }
+  70.833% { left:7.5%;   top:57.76%; transform:translate(-50%,-50%) scale(0.984); opacity:0.796; z-index:1; }
+  75%     { left:6%;     top:50%;    transform:translate(-50%,-50%) scale(0.95);  opacity:0.725; z-index:0; }
+  79.167% { left:7.5%;   top:42.24%; transform:translate(-50%,-50%) scale(0.916); opacity:0.654; z-index:-1; }
+  83.333% { left:11.89%; top:35%;    transform:translate(-50%,-50%) scale(0.885); opacity:0.587; z-index:-1; }
+  87.5%   { left:18.89%; top:28.79%; transform:translate(-50%,-50%) scale(0.858); opacity:0.531; z-index:-1; }
+  91.667% { left:28%;    top:24.02%; transform:translate(-50%,-50%) scale(0.837); opacity:0.487; z-index:-1; }
+  95.833% { left:38.61%; top:21.02%; transform:translate(-50%,-50%) scale(0.824); opacity:0.459; z-index:-1; }
+  100%    { left:50%;    top:20%;    transform:translate(-50%,-50%) scale(0.82);  opacity:0.45;  z-index:-1; }
+}
+
+/* Fades the base of the hero into the background, ahead of the marquee. */
 .hero-gradient-base{
-  position:absolute; inset-inline:0; bottom:0; z-index:20; height:26vh;
+  position:absolute; inset-inline:0; bottom:0; z-index:5; height:26vh;
   background:linear-gradient(to bottom, transparent, var(--background));
 }
 
-.hero-name{
-  position:absolute; z-index:10; inset-inline:0; bottom:0; transform:translateY(6%);
-  display:flex; flex-direction:column; align-items:center;
-  font-family:var(--font-display); text-transform:uppercase; line-height:0.86; letter-spacing:-0.01em;
-  color:var(--accent); font-size:var(--fs-mega);
-}
-/* Sized per adaptive-grid tier (not just one breakpoint) so "HOSTING" never
-   busts the viewport — each tier renormalizes root font-size independently,
-   so a single rem value that fits on desktop can overflow on tablet. */
-@media (min-width:641px){  .hero-name{ font-size:8.5rem;  line-height:0.84; } }
-@media (min-width:1025px){ .hero-name{ font-size:13rem;   line-height:0.82; } }
-@media (min-width:1441px){ .hero-name{ font-size:17rem;   line-height:0.8;  } }
-.name-line{ display:block; white-space:nowrap; overflow:hidden; }
-.name-line .letter{
-  display:inline-block; transform:translateY(100%); opacity:0;
-  transition:transform 0.9s cubic-bezier(0.16,1,0.3,1), opacity 0.9s cubic-bezier(0.16,1,0.3,1);
-}
-.name-line.is-in .letter{ transform:translateY(0); opacity:1; }
-
 .scroll-cue{
   position:absolute; z-index:30; bottom:2rem; left:var(--gutter);
-  display:flex; align-items:center; gap:0.75rem; font-size:var(--fs-eyebrow);
+  display:flex; align-items:center; gap:0.75rem; font-family:var(--font-mono); font-size:var(--fs-eyebrow);
   text-transform:uppercase; letter-spacing:0.22em; color:var(--muted);
   opacity:0; transition:opacity 0.6s ease-out;
 }
 .scroll-cue.is-in{ opacity:1; }
-.scroll-cue::before{ content:""; width:1px; height:2.5rem; background:var(--accent); }
+.scroll-cue::before{ content:""; width:1px; height:2.5rem; background:var(--accent); box-shadow:0 0 4px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent); }
 
 /* ---------- MARQUEE ---------- */
 .marquee{
   overflow:hidden; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
-  padding-block:2rem;
+  padding-top:2rem; padding-bottom:2rem;
 }
 .marquee-track{
   display:flex; width:max-content; flex-wrap:nowrap;
@@ -326,9 +595,74 @@ body{
 .marquee-item{
   display:flex; align-items:center;
   font-family:var(--font-display); font-size:var(--fs-h2); text-transform:uppercase; letter-spacing:-0.01em;
+  text-shadow:0 0 3px rgba(242,240,230,0.4), 0 0 12px rgba(242,240,230,0.16);
 }
 .marquee-dot{
   margin-inline:2rem; width:0.625rem; height:0.625rem; border-radius:9999px; background:var(--accent); flex-shrink:0;
+  box-shadow:0 0 4px var(--accent), 0 0 12px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* ---------- HOW IT WORKS ---------- */
+/* Desktop: a pinned viewport-height stage where vertical scroll drives a
+   horizontal step track (scroll-linked, not scroll-jacked — the browser's
+   own scroll stays vertical throughout, we just read its progress).
+   Mobile: a plain swipeable scroll-snap row, since pinning fights touch
+   scrolling. Reduced motion collapses to a static grid either way. */
+#how.how-scroller{ padding:0; position:relative; height:400vh; }
+@media (max-width:1023px){ #how.how-scroller{ height:auto; padding:var(--section) 0; } }
+
+.how-pin{
+  position:sticky; top:0; height:100vh; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:center;
+}
+@media (max-width:1023px){ .how-pin{ position:relative; height:auto; overflow:visible; } }
+
+.how-particles{ position:absolute; inset:0; z-index:0; opacity:0.6; }
+
+.how-head{
+  position:relative; z-index:2; padding:0 var(--gutter); margin-bottom:3rem;
+  display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+}
+
+.how-track{ position:relative; z-index:2; display:flex; flex-wrap:nowrap; will-change:transform; }
+@media (max-width:1023px){
+  .how-track{
+    overflow-x:auto; scroll-snap-type:x mandatory; gap:1.25rem; padding:0 var(--gutter) 1rem;
+    -webkit-overflow-scrolling:touch;
+  }
+}
+
+.how-step{
+  flex:0 0 100vw; padding:0 var(--gutter);
+  display:flex; flex-direction:column; justify-content:center; gap:1rem;
+}
+@media (max-width:1023px){
+  .how-step{
+    flex:0 0 82vw; scroll-snap-align:center; padding:1.75rem;
+    border:1px solid var(--line); border-radius:2px; background:color-mix(in srgb, var(--surface) 60%, transparent);
+  }
+}
+.how-step-index{
+  font-family:var(--font-display); font-size:4rem; line-height:1; color:transparent;
+  -webkit-text-stroke:1.5px var(--accent); text-shadow:0 0 12px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.how-step-title{ font-family:var(--font-display); text-transform:uppercase; font-size:var(--fs-h3); letter-spacing:-0.01em; }
+.how-step-text{ color:var(--muted); max-width:32ch; }
+
+.how-dots{ display:none; }
+@media (min-width:1024px){ .how-dots{ display:flex; gap:0.6rem; position:absolute; z-index:2; bottom:2.5rem; left:var(--gutter); } }
+.how-dot{ width:0.45rem; height:0.45rem; border-radius:9999px; background:var(--line); transition:background 0.3s ease-out, box-shadow 0.3s ease-out; }
+.how-dot.is-active{ background:var(--accent); box-shadow:0 0 6px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent); }
+
+@media (prefers-reduced-motion:reduce){
+  #how.how-scroller{ height:auto !important; padding:var(--section) 0 !important; }
+  .how-pin{ position:relative !important; height:auto !important; overflow:visible !important; }
+  .how-track{ transform:none !important; display:grid !important; grid-template-columns:repeat(2, 1fr); gap:2rem; overflow:visible !important; padding:0 var(--gutter) !important; }
+  .how-step{ flex:auto; max-width:none; }
+  .how-dots, .how-particles{ display:none !important; }
+}
+@media (prefers-reduced-motion:reduce) and (max-width:640px){
+  .how-track{ grid-template-columns:1fr; }
 }
 
 /* ---------- SECTION SHARED ---------- */
@@ -336,11 +670,13 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
 .heading-xl{
   margin-top:1.5rem; max-width:22ch; font-family:var(--font-display); text-transform:uppercase;
   line-height:0.95; letter-spacing:-0.01em; font-size:var(--fs-h2);
+  text-shadow:0 0 2px #fff, 0 0 8px rgba(242,240,230,0.5), 0 0 18px rgba(242,240,230,0.2);
 }
 @media (min-width:640px){ .heading-xl{ font-size:var(--fs-h1); } }
 .heading-md{
   margin-top:1.5rem; max-width:22ch; font-family:var(--font-display); text-transform:uppercase;
   line-height:1; letter-spacing:-0.01em; font-size:var(--fs-h2);
+  text-shadow:0 0 2px #fff, 0 0 8px rgba(242,240,230,0.5), 0 0 18px rgba(242,240,230,0.2);
 }
 .section-header-row{
   display:flex; flex-direction:column; gap:1rem;
@@ -349,8 +685,10 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
   .section-header-row{ flex-direction:row; align-items:flex-end; justify-content:space-between; }
 }
 .section-header-label{
+  font-family:var(--font-mono);
   font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.22em; color:var(--muted); flex-shrink:0;
 }
+.section-header-label--stacked{ display:block; margin-top:1rem; }
 
 /* ---------- STORY ---------- */
 .story-grid{ display:grid; grid-template-columns:1fr; gap:3rem; }
@@ -365,12 +703,13 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
 .principle-list{ display:flex; flex-direction:column; }
 .principle{
   display:grid; grid-template-columns:auto 1fr; column-gap:1.5rem;
-  border-top:1px solid var(--line); padding-block:2rem;
+  border-top:1px solid var(--line); padding-top:2rem; padding-bottom:2rem;
 }
 .principle:last-child{ border-bottom:1px solid var(--line); }
 .principle-index{
   font-family:var(--font-sans); font-size:var(--fs-h3); font-weight:600;
   font-variant-numeric:tabular-nums; color:var(--accent);
+  text-shadow:0 0 4px currentColor, 0 0 12px color-mix(in srgb, currentColor 45%, transparent);
 }
 .principle-title{
   font-family:var(--font-sans); font-size:var(--fs-h3); font-weight:600; letter-spacing:-0.01em;
@@ -382,18 +721,26 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
 /* ---------- PLANS ---------- */
 .plans-list{
   margin-top:4rem; display:grid; grid-template-columns:1fr; column-gap:var(--gutter); row-gap:4rem;
+  align-items:start;
 }
-@media (min-width:768px){ .plans-list{ grid-template-columns:1fr 1fr; } }
-@media (min-width:768px){ .plan-card:nth-child(even){ margin-top:6rem; } }
-.plan-art{ aspect-ratio:16/11; width:100%; border-radius:0.125rem; }
+@media (min-width:1024px){ .plans-list{ grid-template-columns:1fr 1fr 1fr; } }
+.plan-card--featured{
+  border:1px solid var(--line-strong); padding:1.25rem;
+  background:var(--surface);
+}
+@media (min-width:1024px){ .plan-card--featured{ margin-top:-1.5rem; } }
+.plan-art{ aspect-ratio:16/11; width:100%; }
+.tilt{ transition:transform 0.4s ease-out; }
+.tilt.tilting{ transition:transform 0.08s linear; }
 .plan-art-icon{
   position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:flex-end; padding:1.5rem;
   font-family:var(--font-display); font-size:5rem; line-height:1; color:rgba(242,240,230,0.18);
 }
 .plan-badge{
-  position:absolute; top:1.25rem; left:1.25rem; font-size:var(--fs-eyebrow); font-weight:500;
-  text-transform:uppercase; letter-spacing:0.16em; color:var(--background);
-  background:var(--warm); padding:0.4rem 0.9rem; border-radius:9999px;
+  position:absolute; top:1.25rem; left:1.25rem; font-family:var(--font-mono); font-size:var(--fs-eyebrow); font-weight:600;
+  text-transform:uppercase; letter-spacing:0.16em; color:var(--background); text-shadow:none;
+  background:var(--accent); padding:0.4rem 0.9rem; border-radius:0;
+  box-shadow:0 0 5px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 .plan-row{
   margin-top:1.5rem; border-top:1px solid var(--line); padding-top:1.25rem;
@@ -406,13 +753,13 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
 .plan-card:hover .plan-name{ color:var(--accent); }
 .plan-blurb{ margin-top:0.5rem; max-width:42ch; font-size:var(--fs-body); color:var(--muted); }
 .plan-meta{ flex-shrink:0; text-align:right; }
-.plan-players{ font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
+.plan-players{ font-family:var(--font-mono); font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
 .plan-price{
-  margin-top:0.5rem; font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase;
-  letter-spacing:0.18em; color:var(--accent);
+  margin-top:0.5rem; font-family:var(--font-mono); font-size:var(--fs-eyebrow); font-weight:500; text-transform:uppercase;
+  letter-spacing:0.18em; color:var(--accent); text-shadow:0 0 4px currentColor, 0 0 10px color-mix(in srgb, currentColor 45%, transparent);
 }
 .plan-specs{
-  margin-top:0.75rem; font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.22em; color:var(--muted);
+  margin-top:0.75rem; font-family:var(--font-mono); font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.22em; color:var(--muted);
 }
 
 /* ---------- IMPACT ---------- */
@@ -422,24 +769,24 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
 @media (min-width:640px){ .stats-grid{ grid-template-columns:1fr 1fr; } }
 @media (min-width:1024px){ .stats-grid{ grid-template-columns:1fr 1fr 1fr 1fr; } }
 .stat-cell{
-  display:flex; flex-direction:column; gap:1rem; border-bottom:1px solid var(--line); padding-block:2.5rem;
+  display:flex; flex-direction:column; gap:1rem; border-bottom:1px solid var(--line); padding-top:2.5rem; padding-bottom:2.5rem;
 }
 @media (min-width:640px){
   .stat-cell:nth-child(2n){ border-left:1px solid var(--line); padding-left:2rem; }
 }
 @media (min-width:1024px){
-  .stat-cell{ padding-block:3rem; }
+  .stat-cell{ padding-top:3rem; padding-bottom:3rem; }
   .stat-cell:nth-child(2n){ border-left:none; padding-left:0; }
   .stat-cell:nth-child(4n+2), .stat-cell:nth-child(4n+3), .stat-cell:nth-child(4n){ border-left:1px solid var(--line); padding-left:2rem; }
   .stat-cell:nth-child(4n+1){ border-left:none; padding-left:0; }
 }
 .stat-figure{
   font-family:var(--font-display); font-size:var(--fs-display); line-height:1; letter-spacing:-0.01em;
-  transition:color 0.34s ease-out;
+  transition:color 0.34s ease-out, text-shadow 0.34s ease-out;
 }
-.stat-cell:nth-child(odd) .stat-figure:hover{ color:var(--accent); }
-.stat-cell:nth-child(even) .stat-figure:hover{ color:var(--warm); }
-.stat-label{ max-width:20ch; font-size:var(--fs-body); text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); }
+.stat-figure{ color:var(--accent); text-shadow:0 0 5px currentColor, 0 0 16px color-mix(in srgb, currentColor 40%, transparent); }
+.stat-figure:hover{ text-shadow:0 0 6px currentColor, 0 0 20px color-mix(in srgb, currentColor 55%, transparent); }
+.stat-label{ max-width:20ch; font-family:var(--font-mono); font-size:var(--fs-body); letter-spacing:0.02em; color:var(--muted); }
 
 /* ---------- VOICES ---------- */
 .voices-grid{ margin-top:4rem; display:grid; grid-template-columns:1fr; gap:2.5rem; }
@@ -448,11 +795,11 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
 @media (min-width:1024px){ .voice-selector{ grid-column:1/6; } }
 .voice-btn{
   width:100%; display:flex; align-items:baseline; gap:1.25rem; text-align:left;
-  border-top:1px solid var(--line); padding-block:1.75rem;
+  border-top:1px solid var(--line); padding-top:1.75rem; padding-bottom:1.75rem;
 }
 .voice-btn:last-child{ border-bottom:1px solid var(--line); }
 .voice-idx{
-  font-size:var(--fs-eyebrow); font-variant-numeric:tabular-nums; letter-spacing:0.18em; color:var(--muted);
+  font-family:var(--font-mono); font-size:var(--fs-eyebrow); font-variant-numeric:tabular-nums; letter-spacing:0.18em; color:var(--muted);
   transition:color 0.3s ease-out;
 }
 .voice-meta{ display:flex; flex-direction:column; gap:0.25rem; }
@@ -460,9 +807,9 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
   font-family:var(--font-sans); font-size:var(--fs-h3); font-weight:600; letter-spacing:-0.01em; color:var(--muted);
   transition:color 0.3s ease-out;
 }
-.voice-role{ font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
-.voice-rule{ margin-left:auto; align-self:center; height:1px; width:0; background:var(--accent); transition:width 0.3s ease-out; flex-shrink:0; }
-.voice-btn.active .voice-idx{ color:var(--accent); }
+.voice-role{ font-family:var(--font-mono); font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
+.voice-rule{ margin-left:auto; align-self:center; height:1px; width:0; background:var(--accent); box-shadow:0 0 4px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent); transition:width 0.3s ease-out; flex-shrink:0; }
+.voice-btn.active .voice-idx{ color:var(--accent); text-shadow:0 0 4px currentColor, 0 0 10px color-mix(in srgb, currentColor 45%, transparent); }
 .voice-btn.active .voice-name{ color:var(--foreground); }
 .voice-btn.active .voice-rule{ width:2.5rem; }
 
@@ -479,16 +826,16 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
   line-height:1.3; letter-spacing:-0.01em; color:var(--foreground);
 }
 .voice-quote .word{
-  display:inline-block; transform:translateY(18px); opacity:0;
+  display:inline-block; transform:perspective(400px) translateY(18px) rotateX(-40deg); opacity:0;
   transition:transform 0.52s cubic-bezier(0.165,0.84,0.44,1), opacity 0.52s cubic-bezier(0.165,0.84,0.44,1);
 }
-.voice-quote.replay .word{ transform:none; opacity:1; }
-.voice-footer-item{ display:none; margin-top:2rem; font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
+.voice-quote.replay .word{ transform:perspective(400px) translateY(0) rotateX(0deg); opacity:1; }
+.voice-footer-item{ display:none; margin-top:2rem; font-size:var(--fs-eyebrow); letter-spacing:0.04em; color:var(--muted); }
 .voice-footer-item.active{ display:block; }
 
 .voice-portrait-wrap{ order:1; width:100%; }
 @media (min-width:640px){ .voice-portrait-wrap{ order:2; width:16rem; } }
-.voice-portrait-item{ display:none; aspect-ratio:4/5; width:100%; border-radius:0.125rem; opacity:0; transform:scale(1.06); transition:opacity 0.64s cubic-bezier(0.16,1,0.3,1), transform 0.64s cubic-bezier(0.16,1,0.3,1); }
+.voice-portrait-item{ display:none; aspect-ratio:4/5; width:100%; opacity:0; transform:scale(1.06); transition:opacity 0.64s cubic-bezier(0.16,1,0.3,1), transform 0.64s cubic-bezier(0.16,1,0.3,1); }
 .voice-portrait-item.active{ display:block; }
 .voice-portrait-item.active.shown{ opacity:1; transform:scale(1); }
 .voice-initials{
@@ -507,51 +854,71 @@ section, footer#contact{ padding:var(--section) var(--gutter); }
   word-break:break-all; transition:transform 0.34s ease-out, color 0.34s ease-out;
 }
 @media (min-width:640px){ .email-link{ font-size:var(--fs-h1); gap:1rem; } }
-.email-link:hover{ transform:translateX(14px); color:var(--accent); }
-.email-arrow{ color:var(--accent); }
+.email-link:hover{ transform:translateX(14px); color:var(--accent); text-shadow:0 0 5px currentColor, 0 0 16px color-mix(in srgb, currentColor 45%, transparent); }
+.email-arrow{ color:var(--accent); text-shadow:0 0 5px currentColor, 0 0 14px color-mix(in srgb, currentColor 45%, transparent); }
 
 .footer-bar{
-  margin-top:var(--section); border-top:1px solid var(--line); padding-block:3rem;
+  margin-top:var(--section); border-top:1px solid var(--line); padding-top:3rem; padding-bottom:3rem;
   display:grid; grid-template-columns:1fr; gap:2.5rem;
 }
 @media (min-width:1024px){ .footer-bar{ grid-template-columns:repeat(12,1fr); } }
 .footer-left{ grid-column:1/-1; }
 @media (min-width:1024px){ .footer-left{ grid-column:1/7; } }
 .footer-signature{ font-family:var(--font-display); font-size:var(--fs-h2); text-transform:uppercase; line-height:1; letter-spacing:-0.01em; }
-.footer-tagline{ margin-top:1rem; font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.22em; color:var(--muted); }
+.footer-tagline{ margin-top:1rem; font-family:var(--font-mono); font-size:var(--fs-eyebrow); letter-spacing:0.04em; color:var(--muted); }
 .footer-social{ grid-column:1/-1; display:flex; flex-direction:column; gap:1rem; }
 @media (min-width:1024px){ .footer-social{ grid-column:7/10; } }
 .footer-social a{ display:inline-flex; align-items:center; gap:0.75rem; font-size:var(--fs-body); color:var(--muted); transition:color 0.3s ease-out; }
-.footer-social a::before{ content:""; display:inline-block; width:0; height:1px; background:var(--accent); transition:width 0.3s ease-out; }
+.footer-social a::before{ content:""; display:inline-block; width:0; height:1px; background:var(--accent); box-shadow:0 0 4px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent); transition:width 0.3s ease-out; }
 .footer-social a:hover{ color:var(--foreground); }
 .footer-social a:hover::before{ width:1.5rem; }
 .footer-right{ grid-column:1/-1; }
 @media (min-width:1024px){ .footer-right{ grid-column:10/13; text-align:right; } }
-.footer-copy{ font-size:var(--fs-eyebrow); text-transform:uppercase; letter-spacing:0.18em; color:var(--muted); }
+.footer-copy{ font-family:var(--font-mono); font-size:var(--fs-eyebrow); letter-spacing:0.03em; color:var(--muted); }
 
-main{ position:relative; width:100%; overflow-x:hidden; }
+/* overflow-x:clip, not hidden — hidden turns main into a "scroll container"
+   that hijacks position:sticky for every descendant (the how-it-works pin
+   included); clip still contains horizontal bleed without that side effect. */
+main{ position:relative; width:100%; overflow-x:clip; }
 </style>
 </head>
 <body>
 
+<div class="screen-texture" aria-hidden="true"></div>
+<div id="device-frame" aria-hidden="true">
+  <span class="device-corner tl"></span>
+  <span class="device-corner tr"></span>
+  <span class="device-corner bl"></span>
+  <span class="device-corner br"></span>
+</div>
+
 <div id="preloader" aria-hidden="false">
-  <div class="preloader-brand">Kium</div>
-  <div class="preloader-count"><span id="preloader-count-num">0</span><span class="pct">%</span></div>
+  <div class="boot-stage">
+    <div class="boot-glow"></div>
+    <div class="boot-logo">
+      <img src="assets/logo-k.png" alt="" class="boot-logo-mark" id="boot-logo-badge">
+    </div>
+    <div class="boot-meter">
+      <div class="boot-bar"><span class="boot-bar-fill" id="boot-bar-fill"></span></div>
+      <div class="boot-label"><span>Kium.sys</span><span id="boot-status">Cargando<i class="boot-cursor" aria-hidden="true"></i></span></div>
+    </div>
+  </div>
 </div>
 
 <header id="nav">
   <nav class="nav-inner" aria-label="Principal">
     <a href="#top" class="logo">
-      <span class="logo-badge">K</span>
-      <span class="logo-text">Kium</span>
+      <img src="assets/logo-full.png" alt="Kium" class="logo-mark">
     </a>
     <ul class="nav-links">
+      <li class="nav-status" aria-hidden="true"><span class="nav-status-dot"></span>En línea</li>
       <li><a href="#story">Nosotros</a></li>
       <li><a href="#plans">Planes</a></li>
       <li><a href="#impact">Rendimiento</a></li>
       <li><a href="#voices">Opiniones</a></li>
       <li><a href="#contact">Contacto</a></li>
     </ul>
+    <span class="nav-status nav-status--compact" aria-hidden="true"><span class="nav-status-dot"></span></span>
     <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -573,28 +940,45 @@ main{ position:relative; width:100%; overflow-x:hidden; }
   <!-- HERO -->
   <section id="top">
     <div class="hero-toprow">
-      <h2 class="hero-roles">
-        <span class="line-mask"><span class="line-inner">Rápido</span></span>
-        <span class="line-mask"><span class="line-inner">Estable</span></span>
-        <span class="line-mask"><span class="line-inner">Seguro</span></span>
-        <span class="line-mask"><span class="line-inner">Sin Límites</span></span>
-      </h2>
-      <p class="hero-desc">Hosting de servidores Minecraft optimizado para Cobblemon. Hardware dedicado, cero lag y un equipo real detrás — para que tu comunidad juegue, no espere.</p>
+      <div class="hero-pitch">
+        <h2 class="hero-roles">
+          <span class="line-mask"><span class="line-inner">Rápido · Estable · Seguro · Sin Límites</span></span>
+        </h2>
+        <p class="hero-desc">Hosting de servidores Minecraft optimizado para Cobblemon. Hardware dedicado, <span class="hero-desc-spark">cero lag</span> y un <span class="hero-desc-spark">equipo real</span> detrás — para que tu comunidad juegue, no espere.</p>
+        <ul class="hero-points">
+          <li class="hero-point"><span class="hero-point-mark" aria-hidden="true"></span>Hardware dedicado: NVMe, CPU y RAM sin compartir al límite</li>
+          <li class="hero-point"><span class="hero-point-mark" aria-hidden="true"></span>Configs afinadas para el TPS que exige Cobblemon</li>
+          <li class="hero-point"><span class="hero-point-mark" aria-hidden="true"></span>Soporte real en Discord, no tickets perdidos</li>
+        </ul>
+        <div class="hero-cta">
+          <a href="#plans" class="hero-cta-btn is-primary">Ver planes<span class="hero-cta-btn-arrow" aria-hidden="true">→</span></a>
+          <a href="#how" class="hero-cta-btn is-secondary">Cómo funciona</a>
+        </div>
+      </div>
     </div>
 
     <div class="hero-art-wrap">
-      <div class="hero-art liquid bare" data-scale="30">
-        <svg class="liquid-svg"><filter id="liquid-hero"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
-        <div class="liquid-content" style="filter:url(#liquid-hero)"></div>
+      <div class="hero-art">
+        <div class="hero-art-glow"></div>
+        <div class="hologram" id="hologram">
+          <canvas class="hologram-canvas" id="hologramCanvas" aria-hidden="true"></canvas>
+          <div class="hologram-base" aria-hidden="true"></div>
+          <div class="hero-orbit">
+            <span class="orbit-label orbit-label--a"><span class="line-mask"><span class="line-inner">Rápido</span></span></span>
+            <span class="orbit-label orbit-label--b"><span class="line-mask"><span class="line-inner">Estable</span></span></span>
+            <span class="orbit-label orbit-label--c"><span class="line-mask"><span class="line-inner">Seguro</span></span></span>
+            <span class="orbit-label orbit-label--d"><span class="line-mask"><span class="line-inner">Sin Límites</span></span></span>
+          </div>
+        </div>
+      </div>
+      <div class="rack-selector" role="tablist" aria-label="Previsualizar capacidad del plan en el holograma">
+        <button type="button" class="rack-selector-btn is-active" data-tier="pokeball" role="tab" aria-selected="true">Poké Ball</button>
+        <button type="button" class="rack-selector-btn" data-tier="ultraball" role="tab" aria-selected="false">Ultra Ball</button>
+        <button type="button" class="rack-selector-btn" data-tier="masterball" role="tab" aria-selected="false">Master Ball</button>
       </div>
     </div>
 
     <div class="hero-gradient-base"></div>
-
-    <h1 class="hero-name">
-      <span class="name-line" data-word="KIUM"></span>
-      <span class="name-line" data-word="HOSTING"></span>
-    </h1>
 
     <div class="scroll-cue">Desliza para entrar</div>
   </section>
@@ -608,37 +992,37 @@ main{ position:relative; width:100%; overflow-x:hidden; }
   <section id="story">
     <div class="story-grid">
       <div class="story-left">
-        <span class="eyebrow">Quiénes Somos</span>
         <h2 class="heading-xl heading-lines" data-reveal>
           <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">La estabilidad es</span></span>
           <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">la mejor función.</span></span>
         </h2>
-        <p class="story-lead" data-reveal>Empezamos administrando nuestro propio servidor de Cobblemon y nos cansamos del lag, los crasheos y el soporte que nunca contestaba. Kium nace de esa bronca: infraestructura pensada por jugadores, para jugadores, con el mismo cuidado que le pondríamos a nuestro propio mundo.</p>
+        <span class="section-header-label section-header-label--stacked">01 / Nosotros</span>
+        <p class="story-lead" data-reveal="left">Empezamos administrando nuestro propio servidor de Cobblemon y nos cansamos del lag, los crasheos y el soporte que nunca contestaba. Kium nace de esa bronca: infraestructura pensada por jugadores, para jugadores, con el mismo cuidado que le pondríamos a nuestro propio mundo.</p>
       </div>
       <div class="story-right">
         <ul class="principle-list">
-          <li class="principle" data-reveal style="transition-delay:0ms">
+          <li class="principle" data-reveal="right" style="transition-delay:0ms">
             <span class="principle-index">01</span>
             <div>
               <h3 class="principle-title">Hardware real, no promesas</h3>
               <p class="principle-text">NVMe, CPUs dedicadas y RAM sin sobreventa en cada plan. Nada de recursos compartidos hasta el límite.</p>
             </div>
           </li>
-          <li class="principle" data-reveal style="transition-delay:90ms">
+          <li class="principle" data-reveal="right" style="transition-delay:90ms">
             <span class="principle-index">02</span>
             <div>
               <h3 class="principle-title">Optimizado para Cobblemon</h3>
               <p class="principle-text">Configuraciones y parches probados específicamente para el mod, no una plantilla genérica de Minecraft vanilla.</p>
             </div>
           </li>
-          <li class="principle" data-reveal style="transition-delay:180ms">
+          <li class="principle" data-reveal="right" style="transition-delay:180ms">
             <span class="principle-index">03</span>
             <div>
               <h3 class="principle-title">Soporte humano, no un bot</h3>
               <p class="principle-text">Un equipo real en Discord, respondiendo en minutos, no tickets que desaparecen en el vacío.</p>
             </div>
           </li>
-          <li class="principle" data-reveal style="transition-delay:270ms">
+          <li class="principle" data-reveal="right" style="transition-delay:270ms">
             <span class="principle-index">04</span>
             <div>
               <h3 class="principle-title">Precio claro, sin sorpresas</h3>
@@ -650,22 +1034,63 @@ main{ position:relative; width:100%; overflow-x:hidden; }
     </div>
   </section>
 
+  <!-- HOW IT WORKS -->
+  <section id="how" class="how-scroller">
+    <div class="how-pin">
+      <canvas class="how-particles" id="howParticles" aria-hidden="true"></canvas>
+      <div class="how-head">
+        <h2 class="heading-md heading-lines" data-reveal>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">Así funciona,</span></span>
+          <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">de cero a jugando.</span></span>
+        </h2>
+        <span class="section-header-label">Cómo funciona</span>
+      </div>
+      <div class="how-track" id="howTrack">
+        <article class="how-step">
+          <span class="how-step-index">1</span>
+          <h3 class="how-step-title">Elegís tu plan</h3>
+          <p class="how-step-text">Poké Ball, Ultra Ball o Master Ball según cuántos jugadores esperás, sin letra chica.</p>
+        </article>
+        <article class="how-step">
+          <span class="how-step-index">2</span>
+          <h3 class="how-step-title">Armamos tu server</h3>
+          <p class="how-step-text">Hardware dedicado y configs afinadas para el TPS que exige Cobblemon, listo en minutos.</p>
+        </article>
+        <article class="how-step">
+          <span class="how-step-index">3</span>
+          <h3 class="how-step-title">Te sumás por Discord</h3>
+          <p class="how-step-text">Un equipo real del otro lado, no un ticket que desaparece en el vacío.</p>
+        </article>
+        <article class="how-step">
+          <span class="how-step-index">4</span>
+          <h3 class="how-step-title">Tu comunidad juega</h3>
+          <p class="how-step-text">Cero lag, cero sorpresas de precio — para que jueguen, no esperen.</p>
+        </article>
+      </div>
+      <div class="how-dots" aria-hidden="true">
+        <span class="how-dot is-active" data-step="0"></span>
+        <span class="how-dot" data-step="1"></span>
+        <span class="how-dot" data-step="2"></span>
+        <span class="how-dot" data-step="3"></span>
+      </div>
+    </div>
+  </section>
+
   <!-- PLANS -->
   <section id="plans">
     <div class="section-header-row">
       <div>
-        <span class="eyebrow">Planes De Hosting</span>
         <h2 class="heading-xl heading-lines" data-reveal>
           <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">Elegí la potencia</span></span>
           <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">que tu mundo necesita.</span></span>
         </h2>
       </div>
-      <span class="section-header-label">04 / Planes</span>
+      <span class="section-header-label">02 / Planes</span>
     </div>
 
     <ul class="plans-list">
-      <li class="plan-card" data-reveal>
-        <div class="plan-art liquid" data-scale="26">
+      <li class="plan-card" data-reveal="left">
+        <div class="plan-art liquid hud-corners" data-scale="26">
           <svg class="liquid-svg"><filter id="liquid-plan-1"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
           <div class="liquid-content" style="filter:url(#liquid-plan-1)">
             <div class="liquid-fill"></div>
@@ -677,19 +1102,19 @@ main{ position:relative; width:100%; overflow-x:hidden; }
         </div>
         <div class="plan-row">
           <div>
-            <h3 class="plan-name">Inicial</h3>
-            <p class="plan-blurb">Perfecto para probar Cobblemon con tu grupo de amigos antes de escalar.</p>
+            <h3 class="plan-name">Poké Ball</h3>
+            <p class="plan-blurb">Ideal para arrancar tu servidor de Cobblemon con amigos, sin vueltas.</p>
           </div>
           <div class="plan-meta">
-            <div class="plan-players">1–10 jugadores</div>
+            <div class="plan-players">1–15 jugadores</div>
             <div class="plan-price">Desde $X / mes</div>
           </div>
         </div>
         <div class="plan-specs">4 GB RAM · 2 vCPU</div>
       </li>
 
-      <li class="plan-card" data-reveal style="transition-delay:120ms">
-        <div class="plan-art liquid" data-scale="26">
+      <li class="plan-card plan-card--featured" data-reveal="up" style="transition-delay:120ms">
+        <div class="plan-art liquid hud-corners" data-scale="26">
           <svg class="liquid-svg"><filter id="liquid-plan-2"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
           <div class="liquid-content" style="filter:url(#liquid-plan-2)">
             <div class="liquid-fill"></div>
@@ -702,19 +1127,19 @@ main{ position:relative; width:100%; overflow-x:hidden; }
         </div>
         <div class="plan-row">
           <div>
-            <h3 class="plan-name">Evolución</h3>
-            <p class="plan-blurb">El punto justo entre precio y potencia para comunidades que están creciendo.</p>
+            <h3 class="plan-name">Ultra Ball</h3>
+            <p class="plan-blurb">Más potencia y mods sin límites para comunidades que ya están creciendo en serio.</p>
           </div>
           <div class="plan-meta">
-            <div class="plan-players">10–30 jugadores</div>
+            <div class="plan-players">15–50 jugadores</div>
             <div class="plan-price">Desde $X / mes</div>
           </div>
         </div>
-        <div class="plan-specs">8 GB RAM · 4 vCPU</div>
+        <div class="plan-specs">10 GB RAM · 4 vCPU</div>
       </li>
 
-      <li class="plan-card" data-reveal>
-        <div class="plan-art liquid" data-scale="26">
+      <li class="plan-card" data-reveal="right">
+        <div class="plan-art liquid hud-corners" data-scale="26">
           <svg class="liquid-svg"><filter id="liquid-plan-3"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
           <div class="liquid-content" style="filter:url(#liquid-plan-3)">
             <div class="liquid-fill"></div>
@@ -726,39 +1151,15 @@ main{ position:relative; width:100%; overflow-x:hidden; }
         </div>
         <div class="plan-row">
           <div>
-            <h3 class="plan-name">Máxima Evolución</h3>
-            <p class="plan-blurb">Para servidores con eventos, varias dimensiones y mods pesados sin perder tick rate.</p>
+            <h3 class="plan-name">Master Ball</h3>
+            <p class="plan-blurb">Infraestructura dedicada de tope de gama para las comunidades Cobblemon más grandes.</p>
           </div>
           <div class="plan-meta">
-            <div class="plan-players">30–80 jugadores</div>
-            <div class="plan-price">Desde $X / mes</div>
-          </div>
-        </div>
-        <div class="plan-specs">16 GB RAM · 6 vCPU</div>
-      </li>
-
-      <li class="plan-card" data-reveal style="transition-delay:120ms">
-        <div class="plan-art liquid" data-scale="26">
-          <svg class="liquid-svg"><filter id="liquid-plan-4"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
-          <div class="liquid-content" style="filter:url(#liquid-plan-4)">
-            <div class="liquid-fill"></div>
-            <div class="liquid-vignette"></div>
-            <div class="liquid-veil"></div>
-            <div class="liquid-glow"></div>
-            <div class="plan-art-icon">04</div>
-          </div>
-        </div>
-        <div class="plan-row">
-          <div>
-            <h3 class="plan-name">Legendario</h3>
-            <p class="plan-blurb">Infraestructura dedicada para las comunidades de Cobblemon más grandes de habla hispana.</p>
-          </div>
-          <div class="plan-meta">
-            <div class="plan-players">80+ jugadores</div>
+            <div class="plan-players">50+ jugadores</div>
             <div class="plan-price">Precio a medida</div>
           </div>
         </div>
-        <div class="plan-specs">32 GB RAM · 8 vCPU dedicada</div>
+        <div class="plan-specs">24 GB RAM · 8 vCPU dedicada</div>
       </li>
     </ul>
   </section>
@@ -767,28 +1168,28 @@ main{ position:relative; width:100%; overflow-x:hidden; }
   <section id="impact">
     <div class="section-header-row">
       <div>
-        <span class="eyebrow">En Números</span>
         <h2 class="heading-md heading-lines" data-reveal>
           <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">La confianza,</span></span>
           <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">medida en datos.</span></span>
         </h2>
       </div>
+      <span class="section-header-label">03 / Rendimiento</span>
     </div>
 
     <dl class="stats-grid">
-      <div class="stat-cell" data-reveal style="transition-delay:0ms">
+      <div class="stat-cell" data-reveal="left" style="transition-delay:0ms">
         <dd class="stat-figure">99.9%</dd>
         <dt class="stat-label">Uptime garantizado por contrato</dt>
       </div>
-      <div class="stat-cell" data-reveal style="transition-delay:110ms">
+      <div class="stat-cell" data-reveal="right" style="transition-delay:110ms">
         <dd class="stat-figure">&lt;20ms</dd>
         <dt class="stat-label">Latencia promedio en la red</dt>
       </div>
-      <div class="stat-cell" data-reveal style="transition-delay:220ms">
+      <div class="stat-cell" data-reveal="left" style="transition-delay:220ms">
         <dd class="stat-figure">150+</dd>
         <dt class="stat-label">Servidores Cobblemon activos</dt>
       </div>
-      <div class="stat-cell" data-reveal style="transition-delay:330ms">
+      <div class="stat-cell" data-reveal="right" style="transition-delay:330ms">
         <dd class="stat-figure">24/7</dd>
         <dt class="stat-label">Soporte real, todos los días</dt>
       </div>
@@ -799,12 +1200,12 @@ main{ position:relative; width:100%; overflow-x:hidden; }
   <section id="voices">
     <div class="section-header-row">
       <div>
-        <span class="eyebrow">Opiniones</span>
         <h2 class="heading-md heading-lines" data-reveal>
           <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">Lo que dicen</span></span>
           <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">los administradores.</span></span>
         </h2>
       </div>
+      <span class="section-header-label">04 / Opiniones</span>
     </div>
 
     <div class="voices-grid">
@@ -825,15 +1226,15 @@ main{ position:relative; width:100%; overflow-x:hidden; }
             <footer class="voice-footer-item" data-footer="2">Nico F. — Dev, VoltMon Network</footer>
           </div>
           <div class="voice-portrait-wrap">
-            <div class="voice-portrait-item liquid active" data-portrait="0" data-scale="20">
+            <div class="voice-portrait-item liquid active hud-corners" data-portrait="0" data-scale="20">
               <svg class="liquid-svg"><filter id="liquid-voice-1"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
               <div class="liquid-content" style="filter:url(#liquid-voice-1)"><div class="liquid-fill"></div><div class="liquid-vignette"></div><div class="liquid-veil"></div><div class="liquid-glow warm"></div><div class="voice-initials">TR</div></div>
             </div>
-            <div class="voice-portrait-item liquid" data-portrait="1" data-scale="20">
+            <div class="voice-portrait-item liquid hud-corners" data-portrait="1" data-scale="20">
               <svg class="liquid-svg"><filter id="liquid-voice-2"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
               <div class="liquid-content" style="filter:url(#liquid-voice-2)"><div class="liquid-fill"></div><div class="liquid-vignette"></div><div class="liquid-veil"></div><div class="liquid-glow warm"></div><div class="voice-initials">VG</div></div>
             </div>
-            <div class="voice-portrait-item liquid" data-portrait="2" data-scale="20">
+            <div class="voice-portrait-item liquid hud-corners" data-portrait="2" data-scale="20">
               <svg class="liquid-svg"><filter id="liquid-voice-3"><feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="0"/></filter></svg>
               <div class="liquid-content" style="filter:url(#liquid-voice-3)"><div class="liquid-fill"></div><div class="liquid-vignette"></div><div class="liquid-veil"></div><div class="liquid-glow warm"></div><div class="voice-initials">NF</div></div>
             </div>
@@ -845,12 +1246,11 @@ main{ position:relative; width:100%; overflow-x:hidden; }
 
   <!-- CONTACT / FOOTER -->
   <footer id="contact">
-    <span class="eyebrow">Empezá Ahora</span>
     <h2 class="heading-xl heading-lines" data-reveal>
       <span class="line-mask"><span class="line-inner" style="transition-delay:0ms">¿Tu comunidad merece</span></span>
       <span class="line-mask"><span class="line-inner" style="transition-delay:90ms">algo mejor que lag?</span></span>
     </h2>
-    <p class="contact-desc" data-reveal>Armamos tu servidor de Cobblemon en minutos. Sin contratos largos, sin letra chica.</p>
+    <p class="contact-desc" data-reveal="up">Armamos tu servidor de Cobblemon en minutos. Sin contratos largos, sin letra chica.</p>
     <a class="email-link" href="mailto:hola@kium.gg">hola@kium.gg<span class="email-arrow">↗</span></a>
 
     <div class="footer-bar">
@@ -872,18 +1272,13 @@ main{ position:relative; width:100%; overflow-x:hidden; }
 </main>
 
 <script type="importmap">
-{ "imports": { "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.3.19/dist/lenis.mjs" } }
+{ "imports": {
+  "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.3.19/dist/lenis.mjs",
+  "three": "./assets/vendor/three.module.min.js"
+} }
 </script>
 <script type="module">
-(async () => {
-
-let Lenis = null;
-try {
-  const mod = await import("lenis");
-  Lenis = mod.default;
-} catch (e) {
-  Lenis = null; // CDN unreachable — degrade to native smooth scroll below
-}
+(() => {
 
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -899,20 +1294,35 @@ function applyAdaptiveGrid(){
 applyAdaptiveGrid();
 addEventListener("resize", applyAdaptiveGrid);
 
-/* ---------- Lenis (falls back to native smooth scroll if the CDN import failed) ---------- */
-let lenis;
-if (Lenis) {
-  lenis = new Lenis({ smoothWheel: true });
-  function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
-  requestAnimationFrame(raf);
-} else {
-  lenis = {
-    scrollTo: (el) => el.scrollIntoView({ behavior: "smooth" }),
-    stop: () => {},
-    start: () => {},
-  };
-}
+/* ---------- Lenis (native smooth scroll immediately; upgrades in place if the
+   CDN module shows up — the rest of the page must never wait on that network
+   fetch, or a slow/blocked CDN would stall everything behind it, preloader included) ---------- */
+let lenis = {
+  scrollTo: (el) => el.scrollIntoView({ behavior: "smooth" }),
+  stop: () => {},
+  start: () => {},
+};
 window.lenis = lenis;
+import("lenis").then((mod) => {
+  const real = new mod.default({ smoothWheel: true });
+  function raf(t){ real.raf(t); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+  lenis = real;
+  window.lenis = lenis;
+}).catch(() => { /* CDN unreachable — keep native smooth scroll fallback */ });
+
+/* Runs before any other feature init below: an error further down in this
+   script must never leave the preloader stuck on screen forever. */
+try {
+  initPreloader();
+} catch (e) {
+  console.error("[KIUM-DEBUG] initPreloader threw:", e);
+  const pre = document.getElementById("preloader");
+  if (pre) { pre.style.display = "none"; pre.setAttribute("aria-hidden", "true"); }
+  document.body.style.overflow = "";
+  lenis.start();
+  startHeroReveal(0);
+}
 
 document.querySelectorAll('a[href^="#"]').forEach((a) => {
   a.addEventListener("click", (e) => {
@@ -924,18 +1334,6 @@ document.querySelectorAll('a[href^="#"]').forEach((a) => {
         lenis.scrollTo(target);
       }
     }
-  });
-});
-
-/* ---------- letter-split hero name ---------- */
-document.querySelectorAll(".name-line[data-word]").forEach((line) => {
-  const word = line.dataset.word;
-  [...word].forEach((ch, i) => {
-    const span = document.createElement("span");
-    span.className = "letter";
-    span.textContent = ch;
-    span.style.transitionDelay = (i * 52) + "ms";
-    line.appendChild(span);
   });
 });
 
@@ -1025,6 +1423,296 @@ function initLiquid(){
 }
 initLiquid();
 
+/* ---------- 3D tilt-on-hover for card art & portraits ---------- */
+function initTilt(selector, maxDeg){
+  const finePointer = matchMedia("(hover:hover) and (pointer:fine)").matches && window.innerWidth > 768;
+  if (REDUCED || !finePointer) return;
+  document.querySelectorAll(selector).forEach((el) => {
+    el.classList.add("tilt");
+    el.addEventListener("pointermove", (e) => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      const rx = (0.5 - py) * maxDeg;
+      const ry = (px - 0.5) * maxDeg;
+      el.classList.add("tilting");
+      el.style.transform = `perspective(900px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+    });
+    el.addEventListener("pointerleave", () => {
+      el.classList.remove("tilting");
+      el.style.transform = "perspective(900px) rotateX(0deg) rotateY(0deg)";
+    });
+  });
+}
+initTilt(".plan-art", 7);
+initTilt(".voice-portrait-wrap", 6);
+
+/* ---------- rack tier selector: wired independently of the 3D scene, so the
+   buttons still work (visually select a tier) even if THREE fails to load
+   (blocked CDN/CSP, or file:// where Chrome refuses cross-origin module
+   fetches) — initHologram3D only needs to know the current tier, not own
+   the buttons itself. ---------- */
+let currentRackTier = "pokeball";
+const rackTierListeners = [];
+function setRackTier(tier){
+  currentRackTier = tier;
+  document.querySelectorAll(".rack-selector-btn").forEach((btn) => {
+    const isActive = btn.dataset.tier === tier;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-selected", String(isActive));
+  });
+  rackTierListeners.forEach((fn) => fn(tier));
+}
+document.querySelectorAll(".rack-selector-btn").forEach((btn) => {
+  btn.addEventListener("click", () => setRackTier(btn.dataset.tier));
+});
+
+/* ---------- hero hologram: real WebGL scene (three.js, self-hosted) ---------- */
+/* Genuine 3D geometry and lighting, not a CSS approximation. Deliberately
+   generic sci-fi holography (a layered wireframe core plus an orbiting
+   point ring) — no real-world or trademarked referent. Tilts toward the
+   cursor on top of a continuous idle turntable spin. */
+/* Holographic server rack: a stack of blade units with blinking activity
+   LEDs, built from primitives (no external model) — reads immediately as
+   "this is hosting" rather than an abstract sci-fi shape. Units fly into
+   place on load (the rack "assembling" / booting), then idle with
+   turntable + mouse-tilt rotation, same interaction as before. */
+async function initHologram3D(){
+  const canvas = document.getElementById("hologramCanvas");
+  const hero = document.getElementById("top");
+  if (!canvas || !hero) return;
+
+  // Dynamic, not a top-level static import: a static `import ... from "three"`
+  // at the top of the module gates the ENTIRE script on it resolving first —
+  // if it ever fails (blocked CDN, or loading over file:// where Chrome
+  // refuses cross-origin module fetches even for local sibling files), none
+  // of this script runs at all, preloader included, and the page hangs on
+  // the boot screen forever. A dynamic import here only takes the hologram
+  // down with it.
+  let THREE;
+  try {
+    THREE = await import("three");
+  } catch (e) { return; }
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+  } catch (e) { return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(2.7, 1.15, 6.3);
+  camera.lookAt(0, 0, 0);
+
+  const styles = getComputedStyle(document.documentElement);
+  const accent = new THREE.Color(styles.getPropertyValue("--accent").trim() || "#3d94ff");
+  const accent2 = new THREE.Color(styles.getPropertyValue("--accent-2").trim() || "#8ccbff");
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  scene.add(new THREE.AmbientLight(0x1c2f42, 1.6));
+  const key = new THREE.PointLight(accent, 2.4, 22); key.position.set(3.2, 2.2, 4.2); scene.add(key);
+  const rim = new THREE.PointLight(accent2, 1.5, 22); rim.position.set(-3, -1.4, 3); scene.add(rim);
+
+  const UNIT_COUNT = 12, RACK_W = 2.5, RACK_D = 1.5, UNIT_H = 0.22, GAP = 0.05;
+  const rackH = UNIT_COUNT * (UNIT_H + GAP) - GAP;
+  const PANEL_OPACITY = { dim:0.02, full:0.09 };
+  const EDGE_OPACITY = { dim:0.14, full:0.5 };
+  const LED_OPACITY = { dim:0.05, full:1 };
+
+  // How much of the rack lights up per plan tier — a truthful "headroom"
+  // metaphor (dim bays = unused capacity), not just decoration.
+  const TIER_ACTIVE = { pokeball:4, ultraball:8, masterball:12 };
+  let activeCount = TIER_ACTIVE[currentRackTier] || TIER_ACTIVE.pokeball;
+
+  const frame = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(RACK_W, rackH, RACK_D)),
+    new THREE.LineBasicMaterial({ color:accent, transparent:true, opacity:0.55 })
+  );
+  group.add(frame);
+
+  const units = [];
+  for (let i = 0; i < UNIT_COUNT; i++) {
+    const unit = new THREE.Group();
+    const panelGeo = new THREE.BoxGeometry(RACK_W * 0.94, UNIT_H * 0.86, RACK_D * 0.9);
+
+    const panel = new THREE.Mesh(
+      panelGeo,
+      new THREE.MeshBasicMaterial({ color:accent, transparent:true, opacity:PANEL_OPACITY.dim, blending:THREE.AdditiveBlending, depthWrite:false })
+    );
+    unit.add(panel);
+
+    const edges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(panelGeo),
+      new THREE.LineBasicMaterial({ color:accent, transparent:true, opacity:EDGE_OPACITY.dim })
+    );
+    unit.add(edges);
+
+    const leds = [];
+    for (let l = 0; l < 3; l++) {
+      const led = new THREE.Mesh(
+        new THREE.BoxGeometry(0.06, 0.04, 0.02),
+        new THREE.MeshBasicMaterial({ color:accent2, transparent:true, opacity:LED_OPACITY.dim, blending:THREE.AdditiveBlending, depthWrite:false })
+      );
+      led.position.set(-RACK_W * 0.94 / 2 + 0.16 + l * 0.14, 0, RACK_D * 0.9 / 2 + 0.01);
+      unit.add(led);
+      leds.push(led);
+    }
+
+    const restY = rackH / 2 - UNIT_H / 2 - i * (UNIT_H + GAP);
+    unit.userData = {
+      restY, leds, panel, edges,
+      startY: restY + 2.6 + i * 0.09,
+      delay: i * 0.06,
+      ledPhase: Math.random() * Math.PI * 2,
+      ledSpeed: 1.4 + Math.random() * 2.2,
+      activeLevel: i >= UNIT_COUNT - activeCount ? 1 : 0,
+    };
+    unit.position.y = unit.userData.startY;
+    unit.scale.setScalar(0.001);
+    group.add(unit);
+    units.push(unit);
+  }
+
+  rackTierListeners.push((tier) => {
+    activeCount = TIER_ACTIVE[tier] || TIER_ACTIVE.pokeball;
+  });
+
+  function resize(){
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(1, Math.round(rect.width)), h = Math.max(1, Math.round(rect.height));
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  addEventListener("resize", resize);
+
+  const finePointer = matchMedia("(hover:hover) and (pointer:fine)").matches && window.innerWidth > 768;
+  let targetRX = 0, targetRY = 0, curRX = 0, curRY = 0;
+  if (finePointer) {
+    hero.addEventListener("pointermove", (e) => {
+      const r = hero.getBoundingClientRect();
+      targetRY = (((e.clientX - r.left) / r.width) - 0.5) * 1.1;
+      targetRX = (((e.clientY - r.top) / r.height) - 0.5) * 0.75;
+    });
+    hero.addEventListener("pointerleave", () => { targetRX = 0; targetRY = 0; });
+  }
+
+  if (REDUCED) {
+    units.forEach((u, i) => {
+      u.position.y = u.userData.restY;
+      u.scale.setScalar(1);
+      const active = i >= UNIT_COUNT - activeCount;
+      u.userData.panel.material.opacity = active ? PANEL_OPACITY.full : PANEL_OPACITY.dim;
+      u.userData.edges.material.opacity = active ? EDGE_OPACITY.full : EDGE_OPACITY.dim;
+      u.userData.leds.forEach((led) => { led.material.opacity = active ? 0.85 : LED_OPACITY.dim; });
+    });
+    group.rotation.set(0.14, 0.5, 0);
+    renderer.render(scene, camera);
+    return;
+  }
+
+  const clock = new THREE.Clock();
+  let elapsed = 0, autoY = 0;
+  (function tick(){
+    elapsed += Math.min(clock.getDelta(), 0.05);
+    autoY += 0.0016;
+
+    units.forEach((u, i) => {
+      const t = Math.max(0, Math.min(1, (elapsed - u.userData.delay) / 0.9));
+      const eased = 1 - Math.pow(1 - t, 3);
+      u.position.y = u.userData.startY + (u.userData.restY - u.userData.startY) * eased;
+      u.scale.setScalar(0.15 + 0.85 * eased);
+
+      const target = i >= UNIT_COUNT - activeCount ? 1 : 0;
+      u.userData.activeLevel += (target - u.userData.activeLevel) * 0.05;
+      const lvl = u.userData.activeLevel;
+      u.userData.panel.material.opacity = PANEL_OPACITY.dim + (PANEL_OPACITY.full - PANEL_OPACITY.dim) * lvl;
+      u.userData.edges.material.opacity = EDGE_OPACITY.dim + (EDGE_OPACITY.full - EDGE_OPACITY.dim) * lvl;
+
+      u.userData.leds.forEach((led, li) => {
+        const s = Math.max(0, Math.sin(elapsed * u.userData.ledSpeed + u.userData.ledPhase + li * 1.7));
+        const blink = 0.25 + 0.75 * s;
+        led.material.opacity = LED_OPACITY.dim + (blink - LED_OPACITY.dim) * lvl;
+      });
+    });
+
+    curRX += (targetRX - curRX) * 0.06;
+    curRY += (targetRY - curRY) * 0.06;
+    group.rotation.x = curRX;
+    group.rotation.y = autoY + curRY;
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  })();
+}
+initHologram3D();
+
+/* ---------- how it works: scroll-linked horizontal steps ---------- */
+function initHow(){
+  const scroller = document.querySelector(".how-scroller");
+  const track = document.getElementById("howTrack");
+  const canvas = document.getElementById("howParticles");
+  const dots = document.querySelectorAll(".how-dot");
+  if (!scroller || !track) return;
+
+  const steps = track.children.length;
+  const desktopMQ = matchMedia("(min-width:1024px)");
+
+  function updateTrack(){
+    if (REDUCED || !desktopMQ.matches) { track.style.transform = ""; return; }
+    const rect = scroller.getBoundingClientRect();
+    const total = rect.height - window.innerHeight;
+    const progress = total > 0 ? Math.min(1, Math.max(0, -rect.top / total)) : 0;
+    track.style.transform = `translateX(${-progress * (steps - 1) * 100}vw)`;
+    const idx = Math.round(progress * (steps - 1));
+    dots.forEach((d, i) => d.classList.toggle("is-active", i === idx));
+  }
+  addEventListener("scroll", updateTrack, { passive:true });
+  addEventListener("resize", updateTrack);
+  updateTrack();
+
+  if (REDUCED || !canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent-2").trim() || "#8ccbff";
+  let w = 0, h = 0, particles = [];
+
+  function seed(){
+    const rect = canvas.getBoundingClientRect();
+    w = canvas.width = rect.width;
+    h = canvas.height = rect.height;
+    const count = Math.round((w * h) / 26000);
+    particles = Array.from({ length: Math.max(18, count) }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      r: Math.random() * 1.5 + 0.4,
+      vx: (Math.random() - 0.5) * 0.12, vy: (Math.random() - 0.5) * 0.12,
+      o: Math.random() * 0.5 + 0.15,
+    }));
+  }
+  seed();
+  addEventListener("resize", seed);
+
+  (function tick(){
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = accent;
+    particles.forEach((p) => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = w; else if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h; else if (p.y > h) p.y = 0;
+      ctx.globalAlpha = p.o;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(tick);
+  })();
+}
+initHow();
+
 /* ---------- voices interactivity ---------- */
 function initVoices(){
   const buttons = document.querySelectorAll(".voice-btn");
@@ -1072,20 +1760,24 @@ initVoices();
 
 /* ---------- preloader + hero reveal sequence ---------- */
 function startHeroReveal(base){
-  const roleLines = document.querySelectorAll(".hero-roles .line-mask");
+  const roleLines = document.querySelectorAll(".hero-roles .line-mask, .orbit-label .line-mask");
   const desc = document.querySelector(".hero-desc");
-  const nameLines = document.querySelectorAll(".hero-name .name-line");
+  const points = document.querySelectorAll(".hero-point");
+  const cta = document.querySelector(".hero-cta");
   const cue = document.querySelector(".scroll-cue");
-  setTimeout(() => nameLines[0] && nameLines[0].classList.add("is-in"), base);
-  setTimeout(() => nameLines[1] && nameLines[1].classList.add("is-in"), base + 240);
   roleLines.forEach((el, i) => setTimeout(() => el.classList.add("is-in"), base + 200 + i * 80));
   setTimeout(() => desc && desc.classList.add("is-in"), base + 400);
-  setTimeout(() => cue && cue.classList.add("is-in"), base + 900);
+  points.forEach((el, i) => setTimeout(() => el.classList.add("is-in"), base + 550 + i * 90));
+  setTimeout(() => cta && cta.classList.add("is-in"), base + 880);
+  setTimeout(() => cue && cue.classList.add("is-in"), base + 1000);
 }
 
 function initPreloader(){
   const pre = document.getElementById("preloader");
-  const countEl = document.getElementById("preloader-count-num");
+  const barFill = document.getElementById("boot-bar-fill");
+  const statusEl = document.getElementById("boot-status");
+  const bootBadge = document.getElementById("boot-logo-badge");
+  const navMark = document.querySelector(".logo-mark");
 
   if (REDUCED) {
     pre.style.display = "none";
@@ -1096,34 +1788,93 @@ function initPreloader(){
 
   window.scrollTo(0, 0);
   lenis.stop();
-  const dur = 2000;
-  const start = performance.now();
+  const prevOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
 
-  function frame(now){
-    const t = Math.min(1, (now - start) / dur);
-    countEl.textContent = Math.round(t * 100);
-    if (t < 1) { requestAnimationFrame(frame); }
-    else { finish(); }
+  const POWER_ON_MS = 1400;
+  const HOLD_MS = 180;
+  const FLIGHT_MS = 850;
+  // How long the K and the full wordmark cross-fade once the K lands — the
+  // K holds at opacity 1 for the whole flight and only starts dissolving
+  // once it's sitting still in place, at the exact moment the wordmark
+  // starts appearing, so the two read as one continuous hand-off instead of
+  // the K vanishing into a gap before the wordmark shows up. Keep this in
+  // sync with the .logo-mark animation's duration, and POWER_ON_MS + HOLD_MS
+  // + FLIGHT_MS in sync with its delay.
+  const CROSSFADE_MS = 300;
+
+  if (barFill) {
+    barFill.style.transition = `width ${POWER_ON_MS + HOLD_MS}ms cubic-bezier(0.4,0,0.2,1)`;
+    requestAnimationFrame(() => { barFill.style.width = "100%"; });
   }
-  requestAnimationFrame(frame);
+  setTimeout(() => { if (statusEl) statusEl.textContent = "Listo"; }, POWER_ON_MS + 80);
 
+  let done = false;
   function finish(){
-    pre.classList.add("fade-out");
+    if (done) return;
+    done = true;
+    try {
+      if (navMark && bootBadge) {
+        // Freeze the badge's current animated opacity/filter as plain inline
+        // styles BEFORE touching anything else. Handing a property straight
+        // from a CSS `animation` to a `transition` in the same style pass is
+        // ambiguous — Chrome can snap it straight to the transition's target
+        // instead of respecting its delay/duration. Freezing first gives the
+        // transition an explicit, unambiguous starting point.
+        const cs = getComputedStyle(bootBadge);
+        bootBadge.style.transition = "none";
+        // Kill the boot-power-on keyframe animation before freezing: CSS
+        // animations win the cascade over inline styles, so while it's still
+        // running (the "finishing" class that stops it via CSS hasn't been
+        // added yet) it keeps forcing opacity/filter back to its own value —
+        // any transition targeted at opacity below would get silently
+        // overridden and only "apply" the instant the animation is removed,
+        // rendering as a snap instead of a transition.
+        bootBadge.style.animation = "none";
+        bootBadge.style.opacity = cs.opacity;
+        bootBadge.style.filter = cs.filter;
+        bootBadge.style.transform = "none";
+        void bootBadge.offsetWidth; // force a style flush before changing the target
+
+        const from = bootBadge.getBoundingClientRect();
+        const to = navMark.getBoundingClientRect();
+        const flipX = (to.left + to.width / 2) - (from.left + from.width / 2);
+        const flipY = (to.top + to.height / 2) - (from.top + from.height / 2);
+        // Scale by height, not width: the boot mark is just the K glyph while
+        // the nav mark is the full "KIUM HOSTING" lockup, so widths aren't
+        // comparable — matching height lands the K at the nav logo's scale
+        // right as it fades into the real lockup underneath.
+        const flipScale = to.height / from.height;
+
+        bootBadge.style.transition = `transform ${FLIGHT_MS}ms cubic-bezier(0.65,0,0.35,1), opacity ${CROSSFADE_MS}ms ease-out ${FLIGHT_MS}ms`;
+        bootBadge.style.transform = `translate(${flipX}px, ${flipY}px) scale(${flipScale})`;
+        bootBadge.style.opacity = "0";
+
+        // Drive the wordmark's fade-in from this same tick, on the same
+        // clock, instead of leaving it to its independent CSS delay — that's
+        // what keeps the hand-off a real crossfade rather than two effects
+        // that happen to land close together.
+        navMark.style.animation = "none";
+        navMark.style.opacity = "0";
+        void navMark.offsetWidth; // force a style flush before changing the target — same reason as bootBadge above
+        navMark.style.transition = `opacity ${CROSSFADE_MS}ms ease-out ${FLIGHT_MS}ms`;
+        navMark.style.opacity = "1";
+      }
+    } catch (e) { /* still finish even if the flip math fails */ }
+    pre.classList.add("finishing");
     setTimeout(() => {
-      setTimeout(() => {
-        pre.classList.add("wipe");
-        setTimeout(() => {
-          pre.style.pointerEvents = "none";
-          pre.setAttribute("aria-hidden", "true");
-          lenis.start();
-        }, 700);
-      }, 200);
-    }, 300);
+      pre.style.display = "none";
+      pre.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = prevOverflow;
+      lenis.start();
+    }, FLIGHT_MS + CROSSFADE_MS + 60);
   }
 
-  startHeroReveal(2500);
+  setTimeout(finish, POWER_ON_MS + HOLD_MS);
+  setTimeout(finish, POWER_ON_MS + HOLD_MS + 3000); // hard safety net
+
+  startHeroReveal(POWER_ON_MS + HOLD_MS - 150);
 }
-initPreloader();
 
 })();
 </script>
