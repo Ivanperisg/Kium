@@ -1447,6 +1447,26 @@ function initTilt(selector, maxDeg){
 initTilt(".plan-art", 7);
 initTilt(".voice-portrait-wrap", 6);
 
+/* ---------- rack tier selector: wired independently of the 3D scene, so the
+   buttons still work (visually select a tier) even if THREE fails to load
+   (blocked CDN/CSP, or file:// where Chrome refuses cross-origin module
+   fetches) — initHologram3D only needs to know the current tier, not own
+   the buttons itself. ---------- */
+let currentRackTier = "pokeball";
+const rackTierListeners = [];
+function setRackTier(tier){
+  currentRackTier = tier;
+  document.querySelectorAll(".rack-selector-btn").forEach((btn) => {
+    const isActive = btn.dataset.tier === tier;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-selected", String(isActive));
+  });
+  rackTierListeners.forEach((fn) => fn(tier));
+}
+document.querySelectorAll(".rack-selector-btn").forEach((btn) => {
+  btn.addEventListener("click", () => setRackTier(btn.dataset.tier));
+});
+
 /* ---------- hero hologram: real WebGL scene (three.js, self-hosted) ---------- */
 /* Genuine 3D geometry and lighting, not a CSS approximation. Deliberately
    generic sci-fi holography (a layered wireframe core plus an orbiting
@@ -1505,7 +1525,7 @@ async function initHologram3D(){
   // How much of the rack lights up per plan tier — a truthful "headroom"
   // metaphor (dim bays = unused capacity), not just decoration.
   const TIER_ACTIVE = { pokeball:4, ultraball:8, masterball:12 };
-  let activeCount = TIER_ACTIVE.pokeball;
+  let activeCount = TIER_ACTIVE[currentRackTier] || TIER_ACTIVE.pokeball;
 
   const frame = new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.BoxGeometry(RACK_W, rackH, RACK_D)),
@@ -1556,16 +1576,8 @@ async function initHologram3D(){
     units.push(unit);
   }
 
-  function setTier(tier){
+  rackTierListeners.push((tier) => {
     activeCount = TIER_ACTIVE[tier] || TIER_ACTIVE.pokeball;
-    document.querySelectorAll(".rack-selector-btn").forEach((btn) => {
-      const isActive = btn.dataset.tier === tier;
-      btn.classList.toggle("is-active", isActive);
-      btn.setAttribute("aria-selected", String(isActive));
-    });
-  }
-  document.querySelectorAll(".rack-selector-btn").forEach((btn) => {
-    btn.addEventListener("click", () => setTier(btn.dataset.tier));
   });
 
   function resize(){
