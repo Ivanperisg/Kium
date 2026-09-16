@@ -155,7 +155,6 @@ body{
   #preloader{ display:none !important; }
   .marquee-track{ animation:none !important; }
   .boot-cursor{ animation:none !important; }
-  .hero-stats-dot{ animation:none !important; }
   [data-reveal], .line-inner, .word, .voice-portrait-item, .hero-desc, .hero-point, .hero-cta, .hero-stats{
     transition:none !important; opacity:1 !important; transform:none !important;
   }
@@ -467,15 +466,13 @@ body{
 .hero-stats.is-in{ opacity:1; transform:none; }
 .hero-stats-head{
   display:flex; align-items:center; gap:0.5rem;
-  font-family:var(--font-mono); font-size:0.625rem; font-weight:500; text-transform:uppercase; letter-spacing:0.16em;
+  font-family:var(--font-mono); font-size:0.6875rem; font-weight:500; text-transform:uppercase; letter-spacing:0.16em;
   color:var(--muted); padding-bottom:1rem; border-bottom:1px solid var(--line);
 }
 .hero-stats-dot{
   width:0.4rem; height:0.4rem; border-radius:9999px; background:var(--accent); flex-shrink:0;
   box-shadow:0 0 4px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent);
-  animation:hero-stats-pulse 2.4s ease-in-out infinite;
 }
-@keyframes hero-stats-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
 .hero-stats-row + .hero-stats-row{ padding-top:1.1rem; border-top:1px solid var(--line); }
 .hero-stats-value{
   display:block; font-family:var(--font-display); font-size:1.85rem; line-height:1; letter-spacing:-0.01em;
