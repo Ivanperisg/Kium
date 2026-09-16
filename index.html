@@ -1233,8 +1233,6 @@ main{ position:relative; width:100%; overflow-x:clip; }
 } }
 </script>
 <script type="module">
-import * as THREE from "three";
-
 (() => {
 
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1414,10 +1412,22 @@ initTilt(".voice-portrait-wrap", 6);
    "this is hosting" rather than an abstract sci-fi shape. Units fly into
    place on load (the rack "assembling" / booting), then idle with
    turntable + mouse-tilt rotation, same interaction as before. */
-function initHologram3D(){
+async function initHologram3D(){
   const canvas = document.getElementById("hologramCanvas");
   const hero = document.getElementById("top");
   if (!canvas || !hero) return;
+
+  // Dynamic, not a top-level static import: a static `import ... from "three"`
+  // at the top of the module gates the ENTIRE script on it resolving first —
+  // if it ever fails (blocked CDN, or loading over file:// where Chrome
+  // refuses cross-origin module fetches even for local sibling files), none
+  // of this script runs at all, preloader included, and the page hangs on
+  // the boot screen forever. A dynamic import here only takes the hologram
+  // down with it.
+  let THREE;
+  try {
+    THREE = await import("three");
+  } catch (e) { return; }
 
   let renderer;
   try {
